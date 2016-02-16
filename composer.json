@@ -1,0 +1,8 @@
+{
+    "autoload": {
+        "psr-4": {"Scan\\": "src/"}
+    },
+    "require": {
+        "nikic/php-parser": "^2.0"
+    }
+}
