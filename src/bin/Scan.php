@@ -15,13 +15,17 @@ $traverser->addVisitor(new SymbolTableIndexer( $symbolTable ) );
 $parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 echo "Phase 1\n";
 $it=new \RecursiveDirectoryIterator("../../tests");
-foreach($it as $file) {
+$it2 = new \RecursiveIteratorIterator($it);
+foreach($it2 as $file) {
 	if($file->getExtension()=="php" && $file->isFile()) {
+		++$count;
 		try {
-		    echo " - ".$file->getPathname()."\n";
+		    echo " - $count:".$file->getPathname()."\n";
 		    $fileData = file_get_contents( $file->getPathname() );
 		    $stmts = $parser->parse($fileData);
-		    $traverser->traverse( $stmts );
+			if($stmts) {
+				$traverser->traverse( $stmts );
+			}
 		} catch (\Error $e) {
 		    echo 'Parse Error: '. $e->getMessage()."\n";
 		}

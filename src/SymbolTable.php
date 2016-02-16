@@ -31,6 +31,9 @@ class SymbolTable {
 	}
 
 	function getClassMethods($className) {
-		return $this->classMethods[$className];
+		return 
+			array_key_exists($className, $this->classMethods) ? 
+			$this->classMethods[$className] :
+			array();
 	}
 }

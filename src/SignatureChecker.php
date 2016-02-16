@@ -26,19 +26,20 @@ class SignatureChecker {
 	function checkClassMethods(Class_  $node) {
 		foreach($this->symbolTable->getClassMethods(Util::fqn($node)) as $name=>$methodNode) {
 			list($parentClass,$parentMethod)=$this->findParentWithMethod( $node, $methodNode->name );
-			if ($parentMethod) {
+			if ($parentMethod && $methodNode->name!="__construct") {
 				$this->checkMethod( $node, $methodNode, $parentClass, $parentMethod );
 			}
 		}
 	}
 
 	function checkMethod(Class_ $class, ClassMethod $method, Class_ $parentClass, ClassMethod $parentMethod) {
+		$visibility=Util::getMethodAccessLevel($method);
+		$oldVisibility=Util::getMethodAccessLevel($parentMethod);
+		// "public" and "protected" can be redefined," private can not.
 		if( 
-			$method->isPrivate() != $parentMethod->isPrivate() ||
-			$method->isPublic() != $parentMethod->isPublic() ||
-			$method->isProtected() != $parentMethod->isProtected() 
+			$oldVisibility!=$visibility && $oldVisibility=="private"
 		) {
-			echo "Access level mismtach in ".Util::fqn($class)."::".$method->name."\n";
+			echo "Access level mismatch in ".Util::fqn($class)."::".$method->name." ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod)."\n";
 		}
 		if( count($method->params) != count($parentMethod->params) )  {
 			echo "Parameter count of ".Util::fqn($class)."::".$method->name." does not match ancestor ".Util::fqn($parentClass)."::".$parentMethod->name."\n";

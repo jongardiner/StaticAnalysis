@@ -23,7 +23,7 @@ class SymbolTableIndexer implements NodeVisitor {
 			array_push($this->classStack, $node);
 			
 		}
-		if($node instanceof ClassMethod) {
+		if($node instanceof ClassMethod && count($this->classStack)>0) {
 			$classNode=$this->classStack[count($this->classStack)-1];
 			$className=Util::fqn($classNode);
 			$this->index->addMethod($className, $node->name, $node);
@@ -33,7 +33,7 @@ class SymbolTableIndexer implements NodeVisitor {
 
 	function leaveNode(Node $node) {
 		if($node instanceof Class_) {
-			array_pop($this->classStack);
+			$old=array_pop($this->classStack);
 		}
 		return null;
 	}
