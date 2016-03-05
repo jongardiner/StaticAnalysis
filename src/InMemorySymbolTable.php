@@ -3,16 +3,20 @@
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
 
-class SymbolTable {
+class InMemorySymbolTable implements SymbolTableInterface {
 	private $classMethods = [];
 	private $classes = [];
 
-	function addClass($name, Class_ $class) {
-		$this->classes[$name]=$class;
+	function addClass($name, Class_ $class, $file) {
+		$this->classes[$name]=[$class, $file];
 	}
 
 	function getClass($name) {
-		return array_key_exists($name,$this->classes) ? $this->classes[$name] : null;
+		return array_key_exists($name,$this->classes) ? $this->classes[$name][0] : null;
+	}
+
+	function getClassFile($name) {
+		return array_key_exists($name,$this->classes) ? $this->classes[$name][1] : null;
 	}
 
 	function addMethod($className, $methodName, ClassMethod $method) {
