@@ -6,9 +6,11 @@ use PhpParser\Node\Stmt\Class_;
 class InMemorySymbolTable implements SymbolTableInterface {
 	private $classMethods = [];
 	private $classes = [];
+	private $files = [];
 
 	function addClass($name, Class_ $class, $file) {
 		$this->classes[$name]=[$class, $file];
+		$this->files[ $file ] = true;
 	}
 
 	function getClass($name) {
@@ -24,8 +26,8 @@ class InMemorySymbolTable implements SymbolTableInterface {
 		$this->classMethods[$className][$methodName]=$method;
 	}
 
-	function getClasses() {
-		return $this->classes;
+	function getAllClassNames() {
+		return array_keys($this->classes);
 	}
 
 	function getClassMethod($className, $methodName) {

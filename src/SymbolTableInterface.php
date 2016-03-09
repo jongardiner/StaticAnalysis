@@ -1,4 +1,7 @@
-<?php
+<?php namespace Scan;
+
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassMethod;
 
 interface SymbolTableInterface
 {
@@ -19,9 +22,9 @@ interface SymbolTableInterface
 	function addMethod($className, $methodName, ClassMethod $method);
 
 	/**
-	 * @return Class_[]
+	 * @return string[]
 	 */
-	function getAllClasses();
+	function getAllClassNames();
 
 	/**
 	 * @param $className

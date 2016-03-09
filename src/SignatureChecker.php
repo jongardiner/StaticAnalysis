@@ -5,7 +5,7 @@ use PhpParser\Node\Stmt\Class_;
 
 class SignatureChecker {
 
-	function __construct(SymbolTable $table) {
+	function __construct(SymbolTableInterface $table) {
 		$this->symbolTable=$table;
 	}
 

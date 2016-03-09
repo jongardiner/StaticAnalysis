@@ -8,6 +8,7 @@ use PhpParser\NodeVisitor;
 class SymbolTableIndexer implements NodeVisitor {
 	private $index;
 	private $classStack = [];
+	private $filename = "";
 
 	function __construct( $index ) {
 		$this->index=$index;
@@ -16,10 +17,14 @@ class SymbolTableIndexer implements NodeVisitor {
 		return null;
 	}
 
+	function setFilename($filename) {
+		$this->filename=$filename;
+	}
+
 	function enterNode(Node $node) {
 		if($node instanceof Class_) {
 			$name=Util::fqn($node);
-			$this->index->addClass($name, $node);
+			$this->index->addClass($name, $node, $this->filename);
 			array_push($this->classStack, $node);
 			
 		}
@@ -33,7 +38,7 @@ class SymbolTableIndexer implements NodeVisitor {
 
 	function leaveNode(Node $node) {
 		if($node instanceof Class_) {
-			$old=array_pop($this->classStack);
+			array_pop($this->classStack);
 		}
 		return null;
 	}
