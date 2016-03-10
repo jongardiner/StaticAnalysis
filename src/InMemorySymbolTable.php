@@ -78,27 +78,6 @@ class InMemorySymbolTable implements SymbolTableInterface {
 
 	function ignoreType($name) {
 		$name=strtolower($name);
-		return
-			$name=='datetime' ||
-			$name=='domelement' ||
-			$name=='mail_mime' ||
-			$name=='datetimezone' ||
-			$name=='dateinterval' ||
-			$name=='exception' ||
-			$name=='splmaxheap' ||
-			$name=='xmlwriter' ||
-			$name=='html_quickform2_element' ||
-			$name=='reflectionclass' ||
-			$name=='stdclass' ||
-			$name=='invalidargumentexception' ||
-			$name=='domainexception' ||
-			$name=='intldateformatter' ||
-			$name=='xmlreader' ||
-			$name=='recursivedirectoryiterator' ||
-			$name=='recursiveiteratoriterator' ||
-			$name=='regexiterator' ||
-			$name=='simplexmlelement' ||
-			$name=='runtimeexception';
-
+		return $name=='exception' || $name=='stdclass';
 	}
 }

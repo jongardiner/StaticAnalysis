@@ -6,7 +6,6 @@ use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 
-
 function phase1($baseDir, \RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable) {
 	$indexer = new SymbolTableIndexer($symbolTable);
 	$traverser = new NodeTraverser;
@@ -66,18 +65,23 @@ function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface 
 	}
 }
 
+$str = file_get_contents($_SERVER['argv'][1]);
+$config = json_decode($str,true);
 
 $symbolTable = new InMemorySymbolTable();
-$basePaths = [ dirname(dirname( __DIR__ ))."/vendor/phpstubs/phpstubs", $_SERVER["argv"][1] ];
+$basePaths = $config['index'];
+array_unshift($basePaths, dirname(dirname(__DIR__))."/vendor/phpstubs/phpstubs" );
 foreach($basePaths as $basePath) {
 	$it = new \RecursiveDirectoryIterator($basePath);
 	$it2 = new \RecursiveIteratorIterator($it);
 	$fileCount = phase1($basePath, $it2, $symbolTable);
 }
 
-$basePath = $_SERVER["argv"][2];
-$it = new \RecursiveDirectoryIterator($basePath);
-$it2 = new \RecursiveIteratorIterator($it);
-phase2($basePath, $it2, $symbolTable, $fileCount);
+foreach($config['test'] as $basePath) {
+	$it = new \RecursiveDirectoryIterator($basePath);
+	$it2 = new \RecursiveIteratorIterator($it);
+	phase2($basePath, $it2, $symbolTable, $fileCount);
+
+}
 echo "Done\n\n";
 
