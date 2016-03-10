@@ -3,6 +3,7 @@
         "psr-4": {"Scan\\": "src/"}
     },
     "require": {
-        "nikic/php-parser": "^2.0"
+        "nikic/php-parser": "^2.0",
+	"phpstubs/phpstubs":"dev-master"
     }
 }

@@ -2,10 +2,13 @@
 
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Interface_;
 
 interface SymbolTableInterface
 {
 	function addClass($name, Class_ $class, $file);
+
+	function addInterface($name, Interface_ $interface, $file);
 
 	/**
 	 * @param $name string Full namespace path to a class name
@@ -38,4 +41,23 @@ interface SymbolTableInterface
 	 * @return ClassMethod[]
 	 */
 	function getClassMethods($className);
+
+	/**
+	 * @param $className
+	 * @return string
+	 */
+	function getClassFile($className);
+
+	/**
+	 * @param $interfaceName
+	 * @return string
+	 */
+	function getInterfaceFile($interfaceName);
+
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
+	function ignoreType($name);
+
 }

@@ -2,6 +2,7 @@
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
 
@@ -28,6 +29,11 @@ class SymbolTableIndexer implements NodeVisitor {
 			array_push($this->classStack, $node);
 			
 		}
+		if($node instanceof Interface_) {
+			$name=Util::fqn($node);
+			$this->index->addInterface($name, $node, $this->filename);
+			array_push($this->classStack, $node);
+		}
 		if($node instanceof ClassMethod && count($this->classStack)>0) {
 			$classNode=$this->classStack[count($this->classStack)-1];
 			$className=Util::fqn($classNode);
@@ -37,7 +43,7 @@ class SymbolTableIndexer implements NodeVisitor {
 	}
 
 	function leaveNode(Node $node) {
-		if($node instanceof Class_) {
+		if($node instanceof Class_ || $node instanceof Interface_) {
 			array_pop($this->classStack);
 		}
 		return null;
