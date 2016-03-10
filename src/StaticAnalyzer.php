@@ -1,8 +1,6 @@
 <?php namespace Scan;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
 
 class StaticAnalyzer implements NodeVisitor {
@@ -23,22 +21,24 @@ class StaticAnalyzer implements NodeVisitor {
 	}
 
 	function enterNode(Node $node) {
-		if($node instanceof Class_) {
-			$this->checker->checkAncestry( $this->file, $node );
-			$this->checker->checkClassMethods( $this->file, $node );
+		switch(get_class($node)) {
+			case Node\Stmt\Class_::class:
+				$this->checker->checkAncestry( $this->file, $node );
+				$this->checker->checkClassMethods( $this->file, $node );
+				break;
+			case Node\Expr\StaticCall::class:
+				$this->checker->checkStaticCall($this->file, $node);
+				break;
+			case Node\Expr\New_::class:
+				$this->checker->checkNewCall($this->file, $node);
+				break;
+			case Node\Stmt\Catch_::class:
+				$this->checker->checkCatch($this->file,$node);
+				break;
+			case Node\Expr\ClassConstFetch::class:
+				$this->checker->checkClassConstant($this->file, $node);
+				break;
 		}
-
-		if($node instanceof Node\Expr\StaticCall) {
-			$this->checker->checkStaticCall($this->file, $node);
-		}
-
-		if($node instanceof Node\Expr\New_) {
-			$this->checker->checkNewCall($this->file, $node);
-		}
-		if($node instanceof Node\Stmt\Catch_) {
-			$this->checker->checkCatch($this->file,$node);
-		}
-
 		return null;
 	}
 
@@ -50,5 +50,3 @@ class StaticAnalyzer implements NodeVisitor {
 		return null;
 	}
 }
-
-?>

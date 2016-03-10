@@ -13,7 +13,7 @@ function phase1($baseDir, \RecursiveIteratorIterator $it2, SymbolTableInterface 
 	$traverser->addVisitor($indexer);
 
 	$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-	echo "Phase 1\n";
+
 
 	$count = 0;
 	foreach ($it2 as $file) {
@@ -21,7 +21,7 @@ function phase1($baseDir, \RecursiveIteratorIterator $it2, SymbolTableInterface 
 			++$count;
 			$name=str_replace($baseDir,"",$file->getPathname());
 			try {
-				echo " - $count:" .$name. "\n";
+				//echo " - $count:" .$name. "\n";
 				$fileData = file_get_contents($file->getPathname());
 				$indexer->setFilename($file->getPathname());
 				$stmts = $parser->parse($fileData);
@@ -29,15 +29,15 @@ function phase1($baseDir, \RecursiveIteratorIterator $it2, SymbolTableInterface 
 					$traverser->traverse($stmts);
 				}
 			} catch (Error $e) {
-				echo 'Parse Error: ' . $e->getMessage() . "\n";
+				echo $name.' : Parse Error: ' . $e->getMessage() . "\n";
 			}
 		}
 	}
 	return $count;
 }
 
-function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable, $count) {
-	echo "Phase 2\n";
+function phase2($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable) {
+
 	$traverser = new NodeTraverser;
 	$traverser->addVisitor(new NameResolver());
 	$analyzer=new StaticAnalyzer($basePath,$symbolTable);
@@ -51,6 +51,9 @@ function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface 
 			$name=str_replace($basePath,"",$file->getPathname());
 			try {
 				//echo " - $processingCount/$count:" . $file->getPathname() . "\n";
+				if(isset($config['test-ignore']) && in_array($file->getFilename(), $config['test-ignore'])) {
+					continue;
+				}
 				$fileData = file_get_contents($file->getPathname());
 				$stmts = $parser->parse($fileData);
 				if ($stmts) {
@@ -59,7 +62,6 @@ function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface 
 				}
 			} catch (Error $e) {
 				echo $name.' Parse Error: ' . $e->getMessage() . "\n";
-				exit();
 			}
 		}
 	}
@@ -68,20 +70,21 @@ function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface 
 $str = file_get_contents($_SERVER['argv'][1]);
 $config = json_decode($str,true);
 
+echo "Phase 1\n";
 $symbolTable = new InMemorySymbolTable();
 $basePaths = $config['index'];
 array_unshift($basePaths, dirname(dirname(__DIR__))."/vendor/phpstubs/phpstubs" );
 foreach($basePaths as $basePath) {
 	$it = new \RecursiveDirectoryIterator($basePath);
 	$it2 = new \RecursiveIteratorIterator($it);
-	$fileCount = phase1($basePath, $it2, $symbolTable);
+	phase1($basePath, $it2, $symbolTable);
 }
 
+echo "Phase 2\n";
 foreach($config['test'] as $basePath) {
 	$it = new \RecursiveDirectoryIterator($basePath);
 	$it2 = new \RecursiveIteratorIterator($it);
-	phase2($basePath, $it2, $symbolTable, $fileCount);
-
+	phase2($config, $basePath, $it2, $symbolTable);
 }
 echo "Done\n\n";
 

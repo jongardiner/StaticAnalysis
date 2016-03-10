@@ -5,6 +5,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Const_;
 
 class SignatureChecker {
 	/**
@@ -157,6 +158,37 @@ class SignatureChecker {
 					echo $fileName . " " . $method->getLine() . ":reference to an unknown type $name1\n";
 				}
 			}
+		}
+	}
+
+	function checkClassConstant($fileName, Node\Expr\ClassConstFetch $node) {
+		if($node->class instanceof Name) {
+			$name=Util::implodeParts($node->class);
+			// Todo
+			if($name=='self' || $name=='static' || $name=='parent') {
+				//echo "Static fetch to $name\n";
+				return;
+			}
+			if($this->symbolTable->ignoreType($name)) {
+				return;
+			}
+
+			$file=$this->symbolTable->getClassFile($name);
+			if(!$file) {
+				$file = $this->symbolTable->getInterfaceFile($name);
+				if (!$file) {
+					echo "$fileName " . $node->getLine() . ": can't find file for class $name::" . $node->name . "\n";
+					return;
+				}
+			}
+
+			/*
+			$const=Grabber::getClassFromFile($file, $name, Node\Const_::class);
+			if(!$const) {
+				echo $fileName." ".$node->getLine().": reference to unknown class constant $name::".$node->name."\n";
+			}
+			*/
+
 		}
 	}
 }

@@ -10,15 +10,17 @@ use PhpParser\NodeTraverser;
 class Grabber implements NodeVisitor {
 	private $searchingForName;
 	private $foundClass=null;
+	private $classType=Class_::class;
 
-	function __construct( $searchingForName="" ) {
+	function __construct( $searchingForName="", $classType=Class_::class ) {
 		if($searchingForName) {
-			$this->initForSearch($searchingForName);
+			$this->initForSearch($searchingForName, $classType);
 		}
 	}
 
-	function initForSearch( $searchingForName) {
+	function initForSearch( $searchingForName, $classType=Class_::class) {
 		$this->searchingForName = $searchingForName;
+		$this->classType=$classType;
 		$this->foundClass = null;
 	}
 
@@ -34,8 +36,10 @@ class Grabber implements NodeVisitor {
 	}
 
 	function enterNode(Node $node) {
-		if ($node instanceof Class_ && strcasecmp(Util::fqn($node),$this->searchingForName)==0) {
-			$this->foundClass = $node;
+		if (strcasecmp(get_class($node),$this->classType)==0) {
+			if(strcasecmp(Util::fqn($node),$this->searchingForName)==0) {
+				$this->foundClass = $node;
+			}
 		}
 	}
 
@@ -47,7 +51,7 @@ class Grabber implements NodeVisitor {
 		return null;
 	}
 
-	static function getClassFromFile( $fileName, $className ) {
+	static function getClassFromFile( $fileName, $className, $classType=Class_::class ) {
 		static $lastFile="";
 		static $lastContents;
 		if($lastFile==$fileName) {
@@ -62,7 +66,7 @@ class Grabber implements NodeVisitor {
 		if($stmts) {
 			$traverser = new NodeTraverser;
 			$traverser->addVisitor(new NameResolver());
-			$grabber = new Grabber($className);
+			$grabber = new Grabber($className, $classType);
 			$traverser->addVisitor($grabber);
 			$traverser->traverse( $stmts );
 			return $grabber->getFoundClass();
