@@ -87,7 +87,7 @@ class SignatureChecker {
 	function checkNewCall($fileName, Node\Expr\New_ $node) {
 		if($node->class instanceof Name) {
 			$name=Util::implodeParts($node->class);
-			if(!$this->symbolTable->ignoreType($name)) {
+			if(strcasecmp($name,"self")!=0 && strcasecmp($name,"static")!=0 && !$this->symbolTable->ignoreType($name)) {
 				$class = $this->symbolTable->getClassFile($name);
 				if (!$class) {
 					echo $fileName . " " . $node->getLine() . ": attempt to instantiate unknown class $name\n";

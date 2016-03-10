@@ -67,9 +67,9 @@ function phase2($basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface 
 }
 
 
-$basePaths = [  "../../vendor/phpstubs/phpstubs", $_SERVER["argv"][1] ];
+$symbolTable = new InMemorySymbolTable();
+$basePaths = [ dirname(dirname( __DIR__ ))."/vendor/phpstubs/phpstubs", $_SERVER["argv"][1] ];
 foreach($basePaths as $basePath) {
-	$symbolTable = new InMemorySymbolTable();
 	$it = new \RecursiveDirectoryIterator($basePath);
 	$it2 = new \RecursiveIteratorIterator($it);
 	$fileCount = phase1($basePath, $it2, $symbolTable);

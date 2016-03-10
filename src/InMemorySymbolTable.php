@@ -15,7 +15,6 @@ class InMemorySymbolTable implements SymbolTableInterface {
 	}
 
 	function addClass($name, Class_ $class, $file) {
-		echo "\tAdding $name\n";
 		$this->classes[strtolower($name)]= $file;
 		$this->files[ $file ] = true;
 	}
