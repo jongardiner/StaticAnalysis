@@ -183,20 +183,25 @@ class SignatureChecker {
 			}
 			$line=$node->getLine();
 			$constantName=$node->name;
-			$lastClass=get_class($node);
+
 			if($node->name!='class') {
-				while($node) {
+				while($class) {
 					$const = Grabber::getClassFromStmts($class->stmts, $constantName, Node\Const_::class, Grabber::FROM_NAME);
 					if ($const) {
 						return;
 					}
-					if($node->extends) {
-						$className=Util::implodeParts($node->extends);
-						$node=null;
-						$fileName=$this->symbolTable->getClassFile(Util::fqn($lastClass));
+
+					if($class->extends) {
+						$lastClass= get_class($class);
+						$className=Util::implodeParts($class->extends);
+						$class=null;
+						$fileName=$this->symbolTable->getClassFile($className);
+						if(!$fileName) {
+							$fileName=$this->symbolTable->getInterfaceFile($className);
+						}
+
 						if($fileName) {
-							$node=Grabber::getClassFromFile($fileName,$className, $lastClass);
-							echo "Searching for $constantName is parent class $className\n";
+							$class=Grabber::getClassFromFile($fileName,$className, $lastClass);
 						}
 					} else {
 						break;
