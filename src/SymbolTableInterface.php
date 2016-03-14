@@ -12,7 +12,7 @@ interface SymbolTableInterface
 
 	/**
 	 * @param $name string Full namespace path to a class name
-	 * @return \PhpParser\Builder\Class_
+	 * @return \PhpParser\Node\Stmt\Class_
 	 */
 	function getClass($name);
 

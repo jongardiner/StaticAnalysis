@@ -3,6 +3,7 @@
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
 
@@ -23,16 +24,26 @@ class SymbolTableIndexer implements NodeVisitor {
 	}
 
 	function enterNode(Node $node) {
-		if($node instanceof Class_) {
-			$name=Util::fqn($node);
-			$this->index->addClass($name, $node, $this->filename);
-			array_push($this->classStack, $node);
-			
-		}
-		if($node instanceof Interface_) {
-			$name=Util::fqn($node);
-			$this->index->addInterface($name, $node, $this->filename);
-			array_push($this->classStack, $node);
+		switch(get_class($node)) {
+			case Class_::class:
+				$name=Util::fqn($node);
+				$file=$this->index->getClassFile($name);
+				if($file) {
+					echo $this->filename." ".$node->getLine().": Class $name already exists in $file... Ignoring\n";
+				} else {
+					$this->index->addClass($name, $node, $this->filename);
+				}
+				array_push($this->classStack, $node);
+				break;
+			case Interface_::class:
+				$name=Util::fqn($node);
+				$this->index->addInterface($name, $node, $this->filename);
+				array_push($this->classStack, $node);
+				break;
+			case Function_::class:
+				$name=Util::fqn($node);
+				$this->index->addFunction($name, $node, $this->filename);
+				break;
 		}
 		if($node instanceof ClassMethod && count($this->classStack)>0) {
 			$classNode=$this->classStack[count($this->classStack)-1];

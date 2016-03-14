@@ -42,7 +42,7 @@ class SignatureChecker {
 		if($this->symbolTable->ignoreType($name)) {
 			return;
 		}
-		if(!$this->symbolTable->getClassFile($name)) {
+		if(!$this->symbolTable->getClassFile($name) && !$this->symbolTable->getInterfaceFile($name)) {
 			echo $fileName . " " . $node->getLine() . ": attempt to catch unknown type: $name\n";
 		}
 	}
@@ -102,7 +102,7 @@ class SignatureChecker {
 		foreach($this->symbolTable->getClassMethods(Util::fqn($node)) as $name=>$methodNode) {
 			list($parentClass,$parentMethod)=$this->findParentWithMethod( $node, $methodNode->name );
 			if ($parentMethod && $methodNode->name!="__construct") {
-				// $this->checkMethod( $node, $methodNode, $parentClass, $parentMethod );
+				//$this->checkMethod( $node, $methodNode, $parentClass, $parentMethod );
 			}
 		}
 	}
@@ -173,22 +173,47 @@ class SignatureChecker {
 				return;
 			}
 
-			$file=$this->symbolTable->getClassFile($name);
-			if(!$file) {
-				$file = $this->symbolTable->getInterfaceFile($name);
-				if (!$file) {
-					echo "$fileName " . $node->getLine() . ": can't find file for class $name::" . $node->name . "\n";
+			$class = $this->symbolTable->getClass($name);
+			if(!$class) {
+				$class = $this->symbolTable->getInterface($name);
+				if (!$class) {
+					echo "$fileName " . $node->getLine() . ": That's not a thing.  Can't find class/interface $name\n";
 					return;
 				}
 			}
-
-			/*
-			$const=Grabber::getClassFromFile($file, $name, Node\Const_::class);
-			if(!$const) {
-				echo $fileName." ".$node->getLine().": reference to unknown class constant $name::".$node->name."\n";
+			$line=$node->getLine();
+			$constantName=$node->name;
+			$lastClass=get_class($node);
+			if($node->name!='class') {
+				while($node) {
+					$const = Grabber::getClassFromStmts($class->stmts, $constantName, Node\Const_::class, Grabber::FROM_NAME);
+					if ($const) {
+						return;
+					}
+					if($node->extends) {
+						$className=Util::implodeParts($node->extends);
+						$node=null;
+						$fileName=$this->symbolTable->getClassFile(Util::fqn($lastClass));
+						if($fileName) {
+							$node=Grabber::getClassFromFile($fileName,$className, $lastClass);
+							echo "Searching for $constantName is parent class $className\n";
+						}
+					} else {
+						break;
+					}
+				}
+				echo $fileName . " " . $line . ": reference to unknown constant $name::$constantName\n";
 			}
-			*/
+		}
+	}
 
+	function checkFunctionCall($fileName, Node\Expr\FuncCall $node) {
+		if($node->name instanceof Name) {
+			$name=Util::implodeParts($node->name);
+			$function = $this->symbolTable->getFunction($name);
+			if(!$function) {
+				echo $fileName." ".$node->getLine()." call to unknown function $name\n";
+			}
 		}
 	}
 }

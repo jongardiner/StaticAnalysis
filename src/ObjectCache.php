@@ -14,7 +14,7 @@ class ObjectCache {
 	private $objectCount=0;
 	private $maxObjects=0;
 
-	function __construct($size=50) {
+	function __construct($size=100) {
 		$this->objects=[];
 		$this->objectCount=0;
 		$this->maxObjects=$size;
@@ -32,13 +32,20 @@ class ObjectCache {
 	}
 
 	function get($key) {
+		static $hits=0;
+		static $misses=0;
+
 		if(isset($this->objects[$key])) {
+
 			$value=$this->objects[$key];
 			// Remove the key from the current position, and re-add it as the newest item.
 			unset($this->objects[$key]);
 			$this->objects[$key]=$value;
+			$hits++;
 			return $value;
 		}
+		$misses++;
+		//printf("[Object cache miss, hit percentage: %.f%%]\n",$hits/($hits+$misses)*100);
 		return null;
 	}
 

@@ -3,15 +3,22 @@
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Function_;
 
 class InMemorySymbolTable implements SymbolTableInterface {
 	private $classes = [];
 	private $files = [];
+	private $functions = [];
 	private $interfaces;
 	private $cache;
 
 	function __construct() {
 		$this->cache=new ObjectCache();
+	}
+
+	function addFunction($name, Function_ $function, $file) {
+		$this->functions[strtolower($name)]=$file;
+		$this->files[$file]=true;
 	}
 
 	function addClass($name, Class_ $class, $file) {
@@ -35,7 +42,37 @@ class InMemorySymbolTable implements SymbolTableInterface {
 		}
 		$ob=$this->cache->get($name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($this->classes[$name], $name);
+			$ob = Grabber::getClassFromFile($this->classes[$name], $name, Class_::class);
+			if($ob) {
+				$this->cache->add($name, $ob);
+			}
+		}
+		return $ob;
+	}
+
+	function getInterface($name) {
+		$name=strtolower($name);
+		if(!isset($this->interfaces[$name])) {
+			return null;
+		}
+		$ob=$this->cache->get($name);
+		if(!$ob) {
+			$ob = Grabber::getClassFromFile($this->interfaces[$name], $name, Interface_::class);
+			if($ob) {
+				$this->cache->add($name, $ob);
+			}
+		}
+		return $ob;
+	}
+
+	function getFunction($name) {
+		$name=strtolower($name);
+		if(!isset($this->functions[$name])) {
+			return null;
+		}
+		$ob=$this->cache->get($name);
+		if(!$ob) {
+			$ob = Grabber::getClassFromFile($this->functions[$name], $name, Function_::class);
 			if($ob) {
 				$this->cache->add($name, $ob);
 			}
@@ -45,6 +82,10 @@ class InMemorySymbolTable implements SymbolTableInterface {
 
 	function getClassFile($name) {
 		return $this->classes[strtolower($name)];
+	}
+
+	function getFunctionFile($name) {
+		return $this->functions[strtolower($name)];
 	}
 
 	function addMethod($className, $methodName, ClassMethod $method) {
@@ -68,9 +109,11 @@ class InMemorySymbolTable implements SymbolTableInterface {
 	function getClassMethods($className) {
 		$ret = [];
 		$class = $this->getClass($className);
-		foreach( $class->stmts as $stmt) {
-			if($stmt instanceof ClassMethod) {
-				$ret[]=$stmt;
+		if(is_array($class->stmts)) {
+			foreach( $class->stmts as $stmt) {
+				if ($stmt instanceof ClassMethod) {
+					$ret[] = $stmt;
+				}
 			}
 		}
 		return $ret;
