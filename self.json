@@ -1,0 +1,4 @@
+{
+  "index": ["src","vendor"],
+  "test": ["src"]
+}

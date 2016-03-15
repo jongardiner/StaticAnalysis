@@ -33,7 +33,7 @@ function phase1($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTableI
 			$name=removeInitialPath($baseDir,$file->getPathname());
 			try {
 
-				if(isset($config['ignore']) && is_array($config['ignore']) && matchesGlobs($file->getPathname(), $config['ignore'])) {
+				if(isset($config['ignore']) && is_array($config['ignore']) && matchesGlobs($baseDir, $file->getPathname(), $config['ignore'])) {
 					continue;
 				}
 				++$count;
@@ -52,21 +52,21 @@ function phase1($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTableI
 	return $count;
 }
 
-function matchesGlobs($path, $globArr) {
+function matchesGlobs($basePath, $path, $globArr) {
 	foreach($globArr as $glob) {
-		if(Glob::match($path, $glob)) {
+		if(Glob::match($path, $basePath."/".$glob)) {
 			return true;
 		}
 	}
 	return false;
 }
 
-function phase2($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable, &$toProcess) {
+function getPhase2Files($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable, &$toProcess) {
 
 
 	foreach ($it2 as $file) {
 		if ($file->getExtension() == "php" && $file->isFile()) {
-			if (isset($config['test-ignore']) && is_array($config['test-ignore']) && matchesGlobs($file->getPathname(), $config['test-ignore'])) {
+			if (isset($config['test-ignore']) && is_array($config['test-ignore']) && matchesGlobs($basePath, $file->getPathname(), $config['test-ignore'])) {
 				continue;
 			}
 			$toProcess[] = $file->getPathname();
@@ -74,7 +74,7 @@ function phase2($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableI
 	}
 }
 
-function phase3($basePath, $toProcess, $symbolTable) {
+function phase2($basePath, $toProcess, $symbolTable) {
 	$traverser = new NodeTraverser;
 	$traverser->addVisitor(new NameResolver());
 	$analyzer = new StaticAnalyzer($basePath, $symbolTable);
@@ -99,18 +99,21 @@ function phase3($basePath, $toProcess, $symbolTable) {
 	}
 }
 
+if(count($_SERVER["argv"])<2) {
+	echo "Usage: php -d memory_limit=500M Scan.php [config file]\n\n";
+	exit();
+}
 $str = file_get_contents($_SERVER['argv'][1]);
 $config = json_decode($str,true);
+$basePath = dirname(realpath($_SERVER['argv'][1]));
 
 //$symbolTable = new SymbolTable\InMemorySymbolTable();
-$symbolTable = new SymbolTable\SqliteSymbolTable();
-
-
-
+$symbolTable = new SymbolTable\SqliteSymbolTable($basePath);
 
 if(!isset($_SERVER["argv"][2])) {
 	echo "Phase 1\n";
 	$basePaths = $config['index'];
+
 /*
 	array_unshift($basePaths, dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs");
 	foreach ($basePaths as $basePath) {
@@ -120,10 +123,12 @@ if(!isset($_SERVER["argv"][2])) {
 	}
 */
 	$toProcess=[];
-	foreach($config['test'] as $basePath) {
-		$it = new \RecursiveDirectoryIterator($basePath);
+	foreach($config['test'] as $directory) {
+		$directory=$basePath."/".$directory;
+		echo "Directory: $directory\n";
+		$it = new \RecursiveDirectoryIterator($directory);
 		$it2 = new \RecursiveIteratorIterator($it);
-		phase2($config, $basePath, $it2, $symbolTable, $toProcess);
+		getPhase2Files($config, $basePath, $it2, $symbolTable, $toProcess);
 	}
 
 	echo "Phase 2\n";
@@ -132,7 +137,7 @@ if(!isset($_SERVER["argv"][2])) {
 	for($i=0;$i<4;++$i) {
 		$group= ($i==3) ? array_slice($toProcess, $groupSize*3) : array_slice($toProcess, $groupSize*$i, $groupSize);
 		file_put_contents("scan.tmp.$i", implode("\n", $group));
-		$files[]=popen("php -d memory_limit=500M Scan.php scan.json scan.tmp.$i","r");
+		$files[]=popen("php -d memory_limit=500M Scan.php ".$_SERVER["argv"][1]." scan.tmp.$i","r");
 	}
 	while(count($files)>0) {
 		$readFile=$files;
@@ -153,7 +158,8 @@ if(!isset($_SERVER["argv"][2])) {
 	echo "Done\n\n";
 } else {
 	$list=explode("\n",file_get_contents($_SERVER["argv"][2]));
-	phase3("/", $list, $symbolTable);
+	unlink($_SERVER["argv"][2]);
+	phase2($basePath, $list, $symbolTable);
 }
 
 

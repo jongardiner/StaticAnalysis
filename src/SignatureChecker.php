@@ -56,7 +56,7 @@ class SignatureChecker {
 
 				if(!$node) {
 					$file = $this->symbolTable->getClassFile(Util::fqn($current));
-					//echo $file." ".$current->getLine().":Unable to find parent $parent\n";
+					echo $file." ".$current->getLine().":Unable to find parent $parent\n";
 					return null;
 				}
 
@@ -100,9 +100,10 @@ class SignatureChecker {
 	function checkClassMethods($fileName, Class_  $node) {
 		$this->checkInterfaces($node);
 		foreach($this->symbolTable->getClassMethods(Util::fqn($node)) as $name=>$methodNode) {
+			$this->checkParamTypes($fileName, $methodNode);
 			list($parentClass,$parentMethod)=$this->findParentWithMethod( $node, $methodNode->name );
 			if ($parentMethod && $methodNode->name!="__construct") {
-				//$this->checkMethod( $node, $methodNode, $parentClass, $parentMethod );
+				$this->checkMethod( $node, $methodNode, $parentClass, $parentMethod );
 			}
 		}
 	}
@@ -119,9 +120,38 @@ class SignatureChecker {
 				return;
 			}
 
-			$class=$this->symbolTable->getClassFile($name);
-			if(!$class && !$this->symbolTable->ignoreType($name)) {
-				echo "$fileName ".$call->getLine().": Static call to unknown class ".Util::implodeParts($call->class)."::".$call->name."\n";
+
+			$class=$this->symbolTable->getClass($name);
+			if(!$class) {
+				if(!$this->symbolTable->ignoreType($name)) {
+					echo "$fileName " . $call->getLine() . ": Static call to unknown class " . Util::implodeParts($call->class) . "::" . $call->name . "\n";
+				}
+			} /*else {
+				$method=$this->symbolTable->getClassMethod($name, $call->name);
+				if (!$method) {
+					$method=$this->findParentWithMethod($class, $name);
+					if(!$method) {
+						echo "$fileName ".$call->getLine()." : Unable to find method.  $name::".$call->name."\n";
+					} else {
+
+					}
+				}
+			}*/
+		}
+	}
+
+	/**
+	 * @param $method ClassMethod
+	 */
+	function checkParamTypes($fileName, ClassMethod $method) {
+		foreach($method->params as $index=>$param) {
+			$name1=Util::implodeParts($param->type);
+			$nameLower=strtolower($name1);
+			if($nameLower!="" && $nameLower!="array" && $nameLower!="callable") {
+				$file = $this->symbolTable->getClassFile($name1) ?: $this->symbolTable->getInterfaceFile($name1);
+				if (!$file && !$this->symbolTable->ignoreType($name1)) {
+					echo $fileName . " " . $method->getLine() . ":reference to an unknown type $name1 in parameter of ".$method->name."\n";
+				}
 			}
 		}
 	}
@@ -148,15 +178,8 @@ class SignatureChecker {
 			if(
 				strcasecmp($name1,$name2) !== 0
 			) {
-				//echo $fileName." ".$method->getLine().": parameter mismatch ".Util::methodSignatureString($method)." vs ".Util::finalPart($parentClass->name)."::".Util::methodSignatureString($parentMethod)."\n";
+				echo $fileName." ".$method->getLine().": parameter mismatch ".Util::methodSignatureString($method)." vs ".Util::finalPart($parentClass->name)."::".Util::methodSignatureString($parentMethod)."\n";
 				break;
-			}
-			$nameLower=strtolower($name1);
-			if($nameLower!="" && $nameLower!="array") {
-				$file = $this->symbolTable->getClassFile($name1) ?: $this->symbolTable->getInterfaceFile($name1);
-				if (!$file && !$this->symbolTable->ignoreType($name1)) {
-					echo $fileName . " " . $method->getLine() . ":reference to an unknown type $name1\n";
-				}
 			}
 		}
 	}

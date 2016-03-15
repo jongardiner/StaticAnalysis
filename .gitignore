@@ -5,3 +5,4 @@ Vagrantfile
 nbproject
 .idea
 composer.phar
+symbol_table.sqlite3

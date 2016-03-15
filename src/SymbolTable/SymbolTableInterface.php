@@ -45,4 +45,5 @@ interface SymbolTableInterface
 	function getClass($name);
 	function getFunction($name);
 	function getInterface($name);
+	function getClassMethods($name);
 }

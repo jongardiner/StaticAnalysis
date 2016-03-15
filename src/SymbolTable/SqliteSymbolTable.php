@@ -14,9 +14,9 @@ class SqliteSymbolTable extends BaseSymbolTable implements SymbolTableInterface 
 	const TYPE_FUNCTION=2;
 	const TYPE_INTERFACE=3;
 
-	function __construct() {
+	function __construct($basePath) {
 		parent::__construct();
-		$this->con = new \PDO("sqlite:./symbol_table.sqlite3");
+		$this->con = new \PDO("sqlite:".$basePath."/symbol_table.sqlite3");
 		$this->init();
 	}
 
