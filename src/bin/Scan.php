@@ -7,7 +7,8 @@ use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Webmozart\Glob\Glob;
-use Scan\SymbolTable\SymbolTableInterface;
+use Scan\SymbolTable\SymbolTable;
+use Scan\SymbolTable\SqliteSymbolTable;
 
 function removeInitialPath($path, $name) {
 	if(strpos($name,$path)===0) {
@@ -17,7 +18,7 @@ function removeInitialPath($path, $name) {
 	}
 }
 
-function phase1($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable) {
+function phase1($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTable $symbolTable, $stubs=false) {
 	$indexer = new SymbolTableIndexer($symbolTable);
 	$traverser = new NodeTraverser;
 	$traverser->addVisitor(new NameResolver());
@@ -32,12 +33,11 @@ function phase1($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTableI
 
 			$name=removeInitialPath($baseDir,$file->getPathname());
 			try {
-
-				if(isset($config['ignore']) && is_array($config['ignore']) && matchesGlobs($baseDir, $file->getPathname(), $config['ignore'])) {
+				if(!$stubs && isset($config['ignore']) && is_array($config['ignore']) && matchesGlobs($baseDir, $file->getPathname(), $config['ignore'])) {
 					continue;
 				}
 				++$count;
-				//echo " - $count:" .$name. "\n";
+				echo " - $count:" .$name. "\n";
 				$fileData = file_get_contents($file->getPathname());
 				$indexer->setFilename($file->getPathname());
 				$stmts = $parser->parse($fileData);
@@ -61,9 +61,7 @@ function matchesGlobs($basePath, $path, $globArr) {
 	return false;
 }
 
-function getPhase2Files($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable, &$toProcess) {
-
-
+function getPhase2Files($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTable $symbolTable, &$toProcess) {
 	foreach ($it2 as $file) {
 		if ($file->getExtension() == "php" && $file->isFile()) {
 			if (isset($config['test-ignore']) && is_array($config['test-ignore']) && matchesGlobs($basePath, $file->getPathname(), $config['test-ignore'])) {
@@ -97,6 +95,7 @@ function phase2($basePath, $toProcess, $symbolTable) {
 			echo $name . ' Parse Error: ' . $e->getMessage() . "\n";
 		}
 	}
+	echo $analyzer->getResults();
 }
 
 if(count($_SERVER["argv"])<2) {
@@ -107,21 +106,26 @@ $str = file_get_contents($_SERVER['argv'][1]);
 $config = json_decode($str,true);
 $basePath = dirname(realpath($_SERVER['argv'][1]));
 
+$shouldIndex = !file_exists($basePath."/symbol_table.sqlite3");
+
 //$symbolTable = new SymbolTable\InMemorySymbolTable();
-$symbolTable = new SymbolTable\SqliteSymbolTable($basePath);
+$symbolTable = new SqliteSymbolTable($basePath);
 
 if(!isset($_SERVER["argv"][2])) {
-	echo "Phase 1\n";
+	echo "Indexing\n";
 	$basePaths = $config['index'];
 
-/*
-	array_unshift($basePaths, dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs");
-	foreach ($basePaths as $basePath) {
-		$it = new \RecursiveDirectoryIterator($basePath);
+	if($shouldIndex) {
+		foreach ($basePaths as $directory) {
+			echo $basePath."/".$directory."\n";
+			$it = new \RecursiveDirectoryIterator($basePath."/".$directory);
+			$it2 = new \RecursiveIteratorIterator($it);
+			phase1($config, $basePath, $it2, $symbolTable);
+		}
+		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");
 		$it2 = new \RecursiveIteratorIterator($it);
-		phase1($config, $basePath, $it2, $symbolTable);
+		phase1($config, $basePath, $it2, $symbolTable, true);
 	}
-*/
 	$toProcess=[];
 	foreach($config['test'] as $directory) {
 		$directory=$basePath."/".$directory;
@@ -131,7 +135,7 @@ if(!isset($_SERVER["argv"][2])) {
 		getPhase2Files($config, $basePath, $it2, $symbolTable, $toProcess);
 	}
 
-	echo "Phase 2\n";
+	echo "Analyzing\n";
 	$files = [];
 	$groupSize=intval(count($toProcess)/4);
 	for($i=0;$i<4;++$i) {

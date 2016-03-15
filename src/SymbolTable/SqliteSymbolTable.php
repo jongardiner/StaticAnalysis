@@ -8,7 +8,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 /**
  * Class SqliteSymbolTable
  */
-class SqliteSymbolTable extends BaseSymbolTable implements SymbolTableInterface {
+class SqliteSymbolTable extends SymbolTable {
 	private $con;
 	const TYPE_CLASS=1;
 	const TYPE_FUNCTION=2;
@@ -32,7 +32,7 @@ class SqliteSymbolTable extends BaseSymbolTable implements SymbolTableInterface 
 			$this->con->prepare($sql)->execute([strtolower($name), $file, $type]);
 		}
 		catch(\PDOException $e) {
-			throw new Exception("Class $name has already been declared");
+			throw new \Exception("Class $name has already been declared");
 		}
 	}
 
@@ -58,10 +58,6 @@ class SqliteSymbolTable extends BaseSymbolTable implements SymbolTableInterface 
 
 	function addFunction($name, Function_ $function, $file) {
 		$this->addType($name, $file, self::TYPE_FUNCTION);
-	}
-
-	function addMethod($className, $methodName, ClassMethod $method) {
-		// TODO: Implement addMethod() method.
 	}
 
 	function getClassFile($className) {

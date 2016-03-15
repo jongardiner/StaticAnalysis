@@ -1,4 +1,5 @@
 {
   "index": ["src","vendor"],
-  "test": ["src"]
+  "test": ["src"],
+  "ignore": ["/**/phpstubs/phpstubs/**/*"]
 }

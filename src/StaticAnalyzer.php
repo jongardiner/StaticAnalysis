@@ -1,16 +1,44 @@
 <?php namespace Scan;
 
+use Llaumgui\JunitXml\JunitXmlTestSuites;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
+use Scan\Checks;
+use Scan\SymbolTable\SymbolTable;
 
 class StaticAnalyzer implements NodeVisitor {
+	/** @var  SymbolTable */
 	private $index;
-	private $checker;
 	private $file;
+	private $checks = [];
+
+	/** @var JunitXmlTestSuites  */
+	private $suites;
 
 	function __construct( $basePath, $index ) {
 		$this->index=$index;
-		$this->checker=new SignatureChecker($basePath,$index);
+
+		$this->suites = new JunitXmlTestSuites('My testsuites');
+		$suite=$this->suites->addTestSuite("Static Analysis");
+
+		$this->checks = [
+			Node\Stmt\Class_::class =>
+				[
+					new Checks\AncestryCheck($this->index, $suite),
+					new Checks\ClassMethodsCheck($this->index, $suite),
+					new Checks\InterfaceCheck($this->index,$suite)
+				],
+			Node\ClassMethod::class =>
+				[ new Checks\ParamTypesCheck($this->index, $suite) ],
+			Node\Expr\StaticCall::class =>
+				[ new Checks\StaticCallCheck($this->index,$suite) ],
+			Node\Expr\New_::class =>
+				[ new Checks\InstantiationCheck($this->index, $suite) ],
+			Node\Stmt\Catch_::class =>
+				[ new Checks\CatchCheck($this->index, $suite) ],
+			Node\Expr\ClassConstFetch::class =>
+				[ new Checks\ClassConstantCheck($this->index, $suite) ]
+		];
 	}
 	function beforeTraverse(array $nodes) {
 		return null;
@@ -21,23 +49,11 @@ class StaticAnalyzer implements NodeVisitor {
 	}
 
 	function enterNode(Node $node) {
-		switch(get_class($node)) {
-			case Node\Stmt\Class_::class:
-				$this->checker->checkAncestry( $this->file, $node );
-				$this->checker->checkClassMethods( $this->file, $node );
-				break;
-			case Node\Expr\StaticCall::class:
-				$this->checker->checkStaticCall($this->file, $node);
-				break;
-			case Node\Expr\New_::class:
-				$this->checker->checkNewCall($this->file, $node);
-				break;
-			case Node\Stmt\Catch_::class:
-				$this->checker->checkCatch($this->file,$node);
-				break;
-			case Node\Expr\ClassConstFetch::class:
-				$this->checker->checkClassConstant($this->file, $node);
-				break;
+		$class=get_class($node);
+		if(isset($this->checks[$class])) {
+			foreach($this->checks[$class] as $check) {
+				$check->run( $this->file, $node );
+			}
 		}
 		return null;
 	}
@@ -48,5 +64,9 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function afterTraverse(array $nodes) {
 		return null;
+	}
+
+	function getResults() {
+		return $this->suites->getXml();
 	}
 }

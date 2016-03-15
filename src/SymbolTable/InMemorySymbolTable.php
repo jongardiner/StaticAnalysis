@@ -5,7 +5,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 
-class InMemorySymbolTable extends BaseSymbolTable implements SymbolTableInterface {
+class InMemorySymbolTable extends SymbolTable {
 	private $classes = [];
 	private $functions = [];
 	private $interfaces = [];
@@ -34,7 +34,5 @@ class InMemorySymbolTable extends BaseSymbolTable implements SymbolTableInterfac
 		return $this->functions[strtolower($name)];
 	}
 
-	function addMethod($className, $methodName, ClassMethod $method) {
-		// Do nothing.
-	}
+
 }

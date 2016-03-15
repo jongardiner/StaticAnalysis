@@ -6,8 +6,9 @@ use Scan\Grabber;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\ClassMethod;
 
-abstract class BaseSymbolTable implements SymbolTableInterface {
+abstract class SymbolTable  {
 
 	/**
 	 * @var ObjectCache
@@ -90,4 +91,37 @@ abstract class BaseSymbolTable implements SymbolTableInterface {
 		$name=strtolower($name);
 		return $name=='exception' || $name=='stdclass';
 	}
+
+	abstract function addClass($name, Class_ $class, $file);
+
+	abstract function addInterface($name, Interface_ $interface, $file);
+
+	/**
+	 * @param string      $className  Full namespace path to a class name
+	 * @param string      $methodName Name of the method
+	 * @param ClassMethod $method     Class method
+	 * @return void
+	 */
+	function addMethod($className, $methodName, ClassMethod $method) {
+		// Do nothing.
+	}
+
+	/**
+	 * @param $className
+	 * @return string
+	 */
+	abstract function getClassFile($className);
+
+	/**
+	 * @param $interfaceName
+	 * @return string
+	 */
+	abstract function getInterfaceFile($interfaceName);
+
+	/**
+	 * @param $methodName
+	 * @return string
+	 */
+	abstract function getFunctionFile($methodName);
+
 }
