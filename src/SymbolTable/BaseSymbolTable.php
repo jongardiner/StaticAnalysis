@@ -3,6 +3,9 @@ namespace Scan\SymbolTable;
 
 use Scan\ObjectCache;
 use Scan\Grabber;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Function_;
 
 abstract class BaseSymbolTable implements SymbolTableInterface {
 
@@ -16,45 +19,45 @@ abstract class BaseSymbolTable implements SymbolTableInterface {
 	}
 
 	function getClass($name) {
-		$name=strtolower($name);
-		if(!isset($this->classes[$name])) {
+		$file=$this->getClassFile($name);
+		if(!$file) {
 			return null;
 		}
-		$ob=$this->cache->get($name);
+		$ob=$this->cache->get("Class:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($this->classes[$name], $name, Class_::class);
+			$ob = Grabber::getClassFromFile($file, $name, Class_::class);
 			if($ob) {
-				$this->cache->add($name, $ob);
+				$this->cache->add("Class:".$name, $ob);
 			}
 		}
 		return $ob;
 	}
 
 	function getInterface($name) {
-		$name=strtolower($name);
-		if(!isset($this->interfaces[$name])) {
+		$file=$this->getInterfaceFile($name);
+		if(!$file) {
 			return null;
 		}
-		$ob=$this->cache->get($name);
+		$ob=$this->cache->get("Interface:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($this->interfaces[$name], $name, Interface_::class);
+			$ob = Grabber::getClassFromFile($file, $name, Interface_::class);
 			if($ob) {
-				$this->cache->add($name, $ob);
+				$this->cache->add("Interface:".$name, $ob);
 			}
 		}
 		return $ob;
 	}
 
 	function getFunction($name) {
-		$name=strtolower($name);
-		if(!isset($this->functions[$name])) {
+		$file=$this->getFunctionFile($name);
+		if(!$file) {
 			return null;
 		}
-		$ob=$this->cache->get($name);
+		$ob=$this->cache->get("Function:".$name);
 		if(!$ob) {
 			$ob = Grabber::getClassFromFile($this->functions[$name], $name, Function_::class);
 			if($ob) {
-				$this->cache->add($name, $ob);
+				$this->cache->add("Function:".$name, $ob);
 			}
 		}
 		return $ob;

@@ -61,58 +61,101 @@ function matchesGlobs($path, $globArr) {
 	return false;
 }
 
-function phase2($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable) {
+function phase2($config, $basePath,\RecursiveIteratorIterator $it2, SymbolTableInterface $symbolTable, &$toProcess) {
 
+
+	foreach ($it2 as $file) {
+		if ($file->getExtension() == "php" && $file->isFile()) {
+			if (isset($config['test-ignore']) && is_array($config['test-ignore']) && matchesGlobs($file->getPathname(), $config['test-ignore'])) {
+				continue;
+			}
+			$toProcess[] = $file->getPathname();
+		}
+	}
+}
+
+function phase3($basePath, $toProcess, $symbolTable) {
 	$traverser = new NodeTraverser;
 	$traverser->addVisitor(new NameResolver());
-	$analyzer=new StaticAnalyzer($basePath,$symbolTable);
+	$analyzer = new StaticAnalyzer($basePath, $symbolTable);
 	$traverser->addVisitor($analyzer);
 
 	$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 	$processingCount = 0;
-	foreach ($it2 as $file) {
-		if ($file->getExtension() == "php" && $file->isFile()) {
-
-			$name=removeInitialPath($basePath,$file->getPathname());
-			try {
-
-				if(isset($config['test-ignore']) && is_array($config['test-ignore']) && matchesGlobs($file->getPathname(), $config['test-ignore'])) {
-					continue;
-				}
-				$processingCount++;
-				//echo " - $processingCount:" . $file->getPathname() . "\n";
-				$fileData = file_get_contents($file->getPathname());
-				$stmts = $parser->parse($fileData);
-				if ($stmts) {
-					$analyzer->setFile($name);
-					$traverser->traverse($stmts);
-				}
-			} catch (Error $e) {
-				echo $name.' Parse Error: ' . $e->getMessage() . "\n";
+	foreach($toProcess as $file) {
+		try {
+			$name = removeInitialPath($basePath, $file);
+			$processingCount++;
+			//echo " - $processingCount:" . $file->getPathname() . "\n";
+			$fileData = file_get_contents($file);
+			$stmts = $parser->parse($fileData);
+			if ($stmts) {
+				$analyzer->setFile($name);
+				$traverser->traverse($stmts);
 			}
+		} catch (Error $e) {
+			echo $name . ' Parse Error: ' . $e->getMessage() . "\n";
 		}
 	}
 }
 
 $str = file_get_contents($_SERVER['argv'][1]);
 $config = json_decode($str,true);
-print_r($config);
 
-echo "Phase 1\n";
-$symbolTable = new SymbolTable\InMemorySymbolTable();
-$basePaths = $config['index'];
-array_unshift($basePaths, dirname(dirname(__DIR__))."/vendor/phpstubs/phpstubs" );
-foreach($basePaths as $basePath) {
-	$it = new \RecursiveDirectoryIterator($basePath);
-	$it2 = new \RecursiveIteratorIterator($it);
-	phase1($config,$basePath, $it2, $symbolTable);
+//$symbolTable = new SymbolTable\InMemorySymbolTable();
+$symbolTable = new SymbolTable\SqliteSymbolTable();
+
+
+
+
+if(!isset($_SERVER["argv"][2])) {
+	echo "Phase 1\n";
+	$basePaths = $config['index'];
+/*
+	array_unshift($basePaths, dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs");
+	foreach ($basePaths as $basePath) {
+		$it = new \RecursiveDirectoryIterator($basePath);
+		$it2 = new \RecursiveIteratorIterator($it);
+		phase1($config, $basePath, $it2, $symbolTable);
+	}
+*/
+	$toProcess=[];
+	foreach($config['test'] as $basePath) {
+		$it = new \RecursiveDirectoryIterator($basePath);
+		$it2 = new \RecursiveIteratorIterator($it);
+		phase2($config, $basePath, $it2, $symbolTable, $toProcess);
+	}
+
+	echo "Phase 2\n";
+	$files = [];
+	$groupSize=intval(count($toProcess)/4);
+	for($i=0;$i<4;++$i) {
+		$group= ($i==3) ? array_slice($toProcess, $groupSize*3) : array_slice($toProcess, $groupSize*$i, $groupSize);
+		file_put_contents("scan.tmp.$i", implode("\n", $group));
+		$files[]=popen("php -d memory_limit=500M Scan.php scan.json scan.tmp.$i","r");
+	}
+	while(count($files)>0) {
+		$readFile=$files;
+		$empty1=$empty2=null;
+		$count=stream_select( $readFile,$empty1, $empty2, 5 );
+		if($count>0) {
+			foreach ($readFile as $index => $file) {
+				echo fread($file, 1000 );
+				if (feof($file)) {
+					pclose($file);
+					unset($files[$index]);
+				}
+			}
+		}
+	}
+
+
+	echo "Done\n\n";
+} else {
+	$list=explode("\n",file_get_contents($_SERVER["argv"][2]));
+	phase3("/", $list, $symbolTable);
 }
 
-echo "Phase 2\n";
-foreach($config['test'] as $basePath) {
-	$it = new \RecursiveDirectoryIterator($basePath);
-	$it2 = new \RecursiveIteratorIterator($it);
-	phase2($config, $basePath, $it2, $symbolTable);
-}
-echo "Done\n\n";
+
+
 

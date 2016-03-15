@@ -41,4 +41,8 @@ interface SymbolTableInterface
 	 * @return bool
 	 */
 	function ignoreType($name);
+
+	function getClass($name);
+	function getFunction($name);
+	function getInterface($name);
 }

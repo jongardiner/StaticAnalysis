@@ -135,7 +135,7 @@ class SignatureChecker {
 		if( 
 			$oldVisibility!=$visibility && $oldVisibility=="private"
 		) {
-			echo $fileName." ".$method->getLine().":Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod)."\n";
+			//echo $fileName." ".$method->getLine().":Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod)."\n";
 		}
 		$count1=count($method->params);
 		$count2=count($parentMethod->params);
@@ -148,7 +148,7 @@ class SignatureChecker {
 			if(
 				strcasecmp($name1,$name2) !== 0
 			) {
-				echo $fileName." ".$method->getLine().": parameter mismatch ".Util::methodSignatureString($method)." vs ".Util::finalPart($parentClass->name)."::".Util::methodSignatureString($parentMethod)."\n";
+				//echo $fileName." ".$method->getLine().": parameter mismatch ".Util::methodSignatureString($method)." vs ".Util::finalPart($parentClass->name)."::".Util::methodSignatureString($parentMethod)."\n";
 				break;
 			}
 			$nameLower=strtolower($name1);

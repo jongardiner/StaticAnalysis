@@ -10,10 +10,6 @@ class InMemorySymbolTable extends BaseSymbolTable implements SymbolTableInterfac
 	private $functions = [];
 	private $interfaces = [];
 
-	function __construct() {
-
-	}
-
 	function addFunction($name, Function_ $function, $file) {
 		$this->functions[strtolower($name)]=$file;
 	}
