@@ -45,7 +45,6 @@ class ObjectCache {
 			return $value;
 		}
 		$misses++;
-		//printf("[Object cache miss, hit percentage: %.f%%]\n",$hits/($hits+$misses)*100);
 		return null;
 	}
 

@@ -7,6 +7,7 @@ use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Webmozart\Glob\Glob;
+use Scan\SymbolTable\SymbolTableInterface;
 
 function removeInitialPath($path, $name) {
 	if(strpos($name,$path)===0) {
@@ -98,7 +99,7 @@ $config = json_decode($str,true);
 print_r($config);
 
 echo "Phase 1\n";
-$symbolTable = new InMemorySymbolTable();
+$symbolTable = new SymbolTable\InMemorySymbolTable();
 $basePaths = $config['index'];
 array_unshift($basePaths, dirname(dirname(__DIR__))."/vendor/phpstubs/phpstubs" );
 foreach($basePaths as $basePath) {

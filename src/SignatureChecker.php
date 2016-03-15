@@ -5,7 +5,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Const_;
+use Scan\SymbolTable\SymbolTableInterface;
 
 class SignatureChecker {
 	/**

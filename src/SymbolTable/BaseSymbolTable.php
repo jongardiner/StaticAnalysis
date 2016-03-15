@@ -1,38 +1,18 @@
-<?php namespace Scan;
+<?php
+namespace Scan\SymbolTable;
 
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\Function_;
+use Scan\ObjectCache;
+use Scan\Grabber;
 
-class InMemorySymbolTable implements SymbolTableInterface {
-	private $classes = [];
-	private $files = [];
-	private $functions = [];
-	private $interfaces;
-	private $cache;
+abstract class BaseSymbolTable implements SymbolTableInterface {
+
+	/**
+	 * @var ObjectCache
+	 */
+	protected $cache;
 
 	function __construct() {
 		$this->cache=new ObjectCache();
-	}
-
-	function addFunction($name, Function_ $function, $file) {
-		$this->functions[strtolower($name)]=$file;
-		$this->files[$file]=true;
-	}
-
-	function addClass($name, Class_ $class, $file) {
-		$this->classes[strtolower($name)]= $file;
-		$this->files[ $file ] = true;
-	}
-
-	function addInterface($name, Interface_ $interface, $file) {
-		$this->interfaces[strtolower($name)]=$file;
-		$this->files[$file]=true;
-	}
-
-	function getInterfaceFile($name) {
-		return $this->interfaces[strtolower($name)];
 	}
 
 	function getClass($name) {
@@ -78,22 +58,6 @@ class InMemorySymbolTable implements SymbolTableInterface {
 			}
 		}
 		return $ob;
-	}
-
-	function getClassFile($name) {
-		return $this->classes[strtolower($name)];
-	}
-
-	function getFunctionFile($name) {
-		return $this->functions[strtolower($name)];
-	}
-
-	function addMethod($className, $methodName, ClassMethod $method) {
-		// Do nothing.
-	}
-
-	function getAllClassNames() {
-		return array_keys($this->classes);
 	}
 
 	function getClassMethod($className, $methodName) {
