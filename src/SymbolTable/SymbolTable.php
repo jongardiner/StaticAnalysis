@@ -2,7 +2,7 @@
 namespace Scan\SymbolTable;
 
 use Scan\ObjectCache;
-use Scan\Grabber;
+use Scan\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;

@@ -1,11 +1,13 @@
 <?php
-namespace Scan\AnalyzingPhase;
+namespace Scan\Phases;
 
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Scan\SymbolTable\SymbolTable;
+use Scan\Util;
+use Scan\NodeVisitors\StaticAnalyzer;
 
 
 class AnalyzingPhase
@@ -44,7 +46,7 @@ class AnalyzingPhase
 				echo $name . ' Parse Error: ' . $e->getMessage() . "\n";
 			}
 		}
-		echo $analyzer->getResults();
+		//echo $analyzer->getResults();
 	}
 
 	function runChildProcesses(array $toProcess) {
@@ -53,7 +55,8 @@ class AnalyzingPhase
 		for ($i = 0; $i < 4; ++$i) {
 			$group = ($i == 3) ? array_slice($toProcess, $groupSize * 3) : array_slice($toProcess, $groupSize * $i, $groupSize);
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
-			$files[] = popen("php -d memory_limit=500M Scan.php " . $_SERVER["argv"][1] . " scan.tmp.$i", "r");
+			$file = popen("php -d memory_limit=500M Scan.php " . $_SERVER["argv"][1] . " scan.tmp.$i", "r");
+			$files[] = $file;
 		}
 		while (count($files) > 0) {
 			$readFile = $files;
@@ -63,8 +66,8 @@ class AnalyzingPhase
 				foreach ($readFile as $index => $file) {
 					echo fread($file, 1000);
 					if (feof($file)) {
-						pclose($file);
-						unset($files[$index]);
+						unset($files[ array_search($file, $files) ]);
+						echo "Exit status: ".pclose($file)."\n";
 					}
 				}
 			}

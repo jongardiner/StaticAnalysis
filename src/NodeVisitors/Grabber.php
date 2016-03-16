@@ -6,6 +6,7 @@ use PhpParser\NodeVisitor;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
+use Scan\Util;
 
 class Grabber implements NodeVisitor {
 	const FROM_NAME=1;

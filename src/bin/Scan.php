@@ -2,8 +2,8 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Scan\AnalyzingPhase\AnalyzingPhase;
 use Scan\Phases\IndexingPhase;
+use Scan\Phases\AnalyzingPhase;
 use Scan\SymbolTable\SqliteSymbolTable;
 
 set_time_limit(0);
@@ -16,10 +16,10 @@ $str = file_get_contents($_SERVER['argv'][1]);
 $config = json_decode($str,true);
 $config['basePath']=dirname(realpath($_SERVER['argv'][1]));
 $config['sqliteFile']=$config['basePath']."/symbol_table.sqlite3";
-$config['singleProcess']=true;
+$config['singleProcess']=false;
 
 if($config['singleProcess']) {
-	$shouldIndex=true;
+	$shouldIndex = true;
 	$symbolTable = new SymbolTable\InMemorySymbolTable();
 } else {
 	$shouldIndex = !file_exists($config['sqliteFile']);

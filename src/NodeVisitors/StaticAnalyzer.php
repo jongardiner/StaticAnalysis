@@ -37,7 +37,9 @@ class StaticAnalyzer implements NodeVisitor {
 			Node\Stmt\Catch_::class =>
 				[ new Checks\CatchCheck($this->index, $suite) ],
 			Node\Expr\ClassConstFetch::class =>
-				[ new Checks\ClassConstantCheck($this->index, $suite) ]
+				[ new Checks\ClassConstantCheck($this->index, $suite) ],
+			Node\Expr\FuncCall::class =>
+				[ new Checks\FunctionCallCheck($this->index, $suite) ]
 		];
 	}
 	function beforeTraverse(array $nodes) {

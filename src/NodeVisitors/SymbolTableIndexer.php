@@ -6,6 +6,7 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
+use Scan\Util;
 
 class SymbolTableIndexer implements NodeVisitor {
 	private $index;

@@ -7,6 +7,8 @@ use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Scan\SymbolTable\SymbolTable;
+use Scan\NodeVisitors\SymbolTableIndexer;
+use Scan\Util;
 
 
 class IndexingPhase
@@ -51,7 +53,7 @@ class IndexingPhase
 			echo $basePath . "/" . $directory . "\n";
 			$it = new \RecursiveDirectoryIterator($basePath . "/" . $directory);
 			$it2 = new \RecursiveIteratorIterator($it);
-			$this->run($config, $basePath, $it2, $symbolTable);
+			$this->index($config, $basePath, $it2, $symbolTable);
 		}
 		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");
 		$it2 = new \RecursiveIteratorIterator($it);

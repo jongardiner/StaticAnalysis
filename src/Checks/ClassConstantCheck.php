@@ -1,6 +1,8 @@
 <?php
 namespace Scan\Checks;
 
+use Scan\NodeVisitors\Grabber;
+
 class ClassConstantCheck extends BaseCheck {
 
 	function run($fileName, $node) {
