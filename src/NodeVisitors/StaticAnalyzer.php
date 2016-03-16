@@ -1,4 +1,4 @@
-<?php namespace Scan;
+<?php namespace Scan\NodeVisitors;
 
 use Llaumgui\JunitXml\JunitXmlTestSuites;
 use PhpParser\Node;

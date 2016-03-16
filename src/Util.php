@@ -3,6 +3,7 @@
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
+use Webmozart\Glob\Glob;
 
 class Util {
 	static function implodeParts( $parts ) {
@@ -34,6 +35,23 @@ class Util {
 		if($level->isPrivate()) return "private";
 		if($level->isProtected()) return "protected";
 		trigger_error("Impossible");
+	}
+
+	static function matchesGlobs($basePath, $path, $globArr) {
+		foreach($globArr as $glob) {
+			if(Glob::match($path, $basePath."/".$glob)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static function removeInitialPath($path, $name) {
+		if(strpos($name,$path)===0) {
+			return substr($name,strlen($path));
+		} else {
+			return $name;
+		}
 	}
 }
 

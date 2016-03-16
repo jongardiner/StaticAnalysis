@@ -3,7 +3,6 @@
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\ClassMethod;
 
 /**
  * Class SqliteSymbolTable
@@ -14,9 +13,9 @@ class SqliteSymbolTable extends SymbolTable {
 	const TYPE_FUNCTION=2;
 	const TYPE_INTERFACE=3;
 
-	function __construct($basePath) {
+	function __construct($fileName) {
 		parent::__construct();
-		$this->con = new \PDO("sqlite:".$basePath."/symbol_table.sqlite3");
+		$this->con = new \PDO("sqlite:$fileName");
 		$this->init();
 	}
 

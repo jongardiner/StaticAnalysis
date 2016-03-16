@@ -1,4 +1,4 @@
-<?php namespace Scan;
+<?php namespace Scan\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
