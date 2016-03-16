@@ -23,14 +23,14 @@ class IndexingPhase
 
 		$count = 0;
 		foreach ($it2 as $file) {
-			if ($file->getExtension() == "php" && $file->isFile()) {
+			if (($file->getExtension() == "php" || $file->getExtension() =="inc") && $file->isFile()) {
 				$name = Util::removeInitialPath($baseDir, $file->getPathname());
 				try {
 					if (!$stubs && isset($config['ignore']) && is_array($config['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $config['ignore'])) {
 						continue;
 					}
 					++$count;
-					echo " - $count:" . $name . "\n";
+					//echo " - $count:" . $name . "\n";
 					$fileData = file_get_contents($file->getPathname());
 					$indexer->setFilename($file->getPathname());
 					$stmts = $parser->parse($fileData);
@@ -50,7 +50,7 @@ class IndexingPhase
 		$basePaths = $config['index'];
 
 		foreach ($basePaths as $directory) {
-			echo $basePath . "/" . $directory . "\n";
+			//echo $basePath . "/" . $directory . "\n";
 			$it = new \RecursiveDirectoryIterator($basePath . "/" . $directory);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->index($config, $basePath, $it2, $symbolTable);

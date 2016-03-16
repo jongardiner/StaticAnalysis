@@ -4,9 +4,8 @@ namespace Scan\Checks;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 
-class InstantiationCheck extends BaseCheck
+class InstanceOfCheck extends BaseCheck
 {
-
 	function run($fileName, $node) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
@@ -14,8 +13,11 @@ class InstantiationCheck extends BaseCheck
 				$this->incTests();
 				$class = $this->symbolTable->getClassFile($name);
 				if (!$class) {
+					$class = $this->symbolTable->getInterfaceFile($name);
+				}
+				if(!$class) {
 					$this->emitError('Unknown class',
-						$fileName . " " . $node->getLine() . ": attempt to instantiate unknown class $name"
+						$fileName . " " . $node->getLine() . ": instance of references unknown class $name"
 					);
 				}
 			}

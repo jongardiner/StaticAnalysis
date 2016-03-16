@@ -3,6 +3,7 @@
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Trait_;
 
 /**
  * Class SqliteSymbolTable
@@ -12,6 +13,7 @@ class SqliteSymbolTable extends SymbolTable {
 	const TYPE_CLASS=1;
 	const TYPE_FUNCTION=2;
 	const TYPE_INTERFACE=3;
+	const TYPE_TRAIT=4;
 
 	function __construct($fileName) {
 		parent::__construct();
@@ -39,6 +41,7 @@ class SqliteSymbolTable extends SymbolTable {
 		$sql="SELECT file FROM symbol_table WHERE name=? and type=?";
 		$statement=$this->con->prepare($sql);
 		$statement->execute([strtolower($name), $type]);
+
 		$result=$statement->fetch(\Pdo::FETCH_NUM);
 		if(count($result)>0) {
 			return $result[0];
@@ -57,6 +60,14 @@ class SqliteSymbolTable extends SymbolTable {
 
 	function addFunction($name, Function_ $function, $file) {
 		$this->addType($name, $file, self::TYPE_FUNCTION);
+	}
+
+	function addTrait($name, Trait_ $trait, $file) {
+		$this->addType($name, $file, self::TYPE_TRAIT);
+	}
+
+	function getTraitFile($name) {
+		return $this->getType($name, self::TYPE_TRAIT);
 	}
 
 	function getClassFile($className) {

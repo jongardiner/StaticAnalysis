@@ -44,7 +44,7 @@ class Grabber implements NodeVisitor {
 	function enterNode(Node $node) {
 		if (strcasecmp(get_class($node),$this->classType)==0) {
 
-			$var = ($this->fromVar == self::FROM_FQN ? Util::fqn($node) : $node->name);
+			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
 			if(strcasecmp($var,$this->searchingForName)==0) {
 				$this->foundClass = $node;
 
@@ -60,10 +60,29 @@ class Grabber implements NodeVisitor {
 		return null;
 	}
 
+	static function filterByType($stmts, $type) {
+		$ret=[];
+		foreach($stmts as $stmt) {
+			if(get_class($stmt)==$type) {
+				$ret[]=$stmt;
+			}
+		}
+		return $ret;
+	}
+
+	/**
+	 * Note: The entire file must first be run through the NameResolver before searching for classes inside of the
+	 * statements array.
+	 *
+	 * @param     $stmts
+	 * @param     $className
+	 * @param     $classType
+	 * @param int $fromVar
+	 * @return null|Class_|Interface_|Trait_
+	 */
 	static function getClassFromStmts( $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
-		$traverser = new NodeTraverser;
-		$traverser->addVisitor(new NameResolver());
 		$grabber = new Grabber($className, $classType, $fromVar);
+		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
 		$traverser->traverse( $stmts );
 		return $grabber->getFoundClass();
@@ -78,7 +97,12 @@ class Grabber implements NodeVisitor {
 			$lastFile = $fileName;
 			$contents = file_get_contents($fileName);
 			$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-			$lastContents = $stmts = $parser->parse($contents);
+			$stmts = $parser->parse($contents);
+
+			$traverser = new NodeTraverser;
+			$traverser->addVisitor(new NameResolver());
+			$traverser->traverse( $stmts );
+			$lastContents=$stmts;
 		}
 
 		if($stmts) {

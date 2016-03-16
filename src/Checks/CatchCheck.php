@@ -11,10 +11,11 @@ class CatchCheck extends BaseCheck
 	 */
 	function run($fileName, $node) {
 
-		$name = Util::implodeParts($node->type);
+		$name = $node->type->toString();
 		if ($this->symbolTable->ignoreType($name)) {
 			return;
 		}
+		$this->incTests();
 		if (!$this->symbolTable->getClassFile($name) && !$this->symbolTable->getInterfaceFile($name)) {
 			$this->emitError('Unknown class',
 				$fileName . " " . $node->getLine() . ": attempt to catch unknown type: $name"

@@ -14,13 +14,17 @@ abstract class BaseCheck {
 	protected $symbolTable;
 
 	function __construct(SymbolTable $symbolTable, JunitXmlTestSuite $suite) {
-		$this->case = $suite->addTest( __CLASS__ );
+		$this->case = $suite->addTest();
+		$this->case->setClassName( get_class($this) );
 		$this->symbolTable=$symbolTable;
 	}
 
+	function incTests() {
+		$this->case->incAssertions();
+	}
 	function emitError($name, $message) {
-		$this->case->addError($message, $name);
-		echo "ERROR: $message\n";
+		$this->case->addFailure($message, $name);
+		echo "ERROR: ".get_class($this).": $message\n";
 	}
 
 	abstract function run($fileName, $node);

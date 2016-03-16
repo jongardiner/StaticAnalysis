@@ -6,6 +6,7 @@ use Scan\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\ClassMethod;
 
 abstract class SymbolTable  {
@@ -34,6 +35,21 @@ abstract class SymbolTable  {
 		return $ob;
 	}
 
+	function getTrait($name) {
+		$file=$this->getTraitFile($name);
+		if(!$file) {
+			return null;
+		}
+		$ob=$this->cache->get("Trait:".$name);
+		if(!$ob) {
+			$ob = Grabber::getClassFromFile($file, $name, Trait_::class);
+			if($ob) {
+				$this->cache->add("Trait:".$name, $ob);
+			}
+		}
+		return $ob;
+	}
+
 	function getInterface($name) {
 		$file=$this->getInterfaceFile($name);
 		if(!$file) {
@@ -56,7 +72,7 @@ abstract class SymbolTable  {
 		}
 		$ob=$this->cache->get("Function:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($this->functions[$name], $name, Function_::class);
+			$ob = Grabber::getClassFromFile($file, $name, Function_::class);
 			if($ob) {
 				$this->cache->add("Function:".$name, $ob);
 			}
@@ -89,7 +105,7 @@ abstract class SymbolTable  {
 
 	function ignoreType($name) {
 		$name=strtolower($name);
-		return $name=='exception' || $name=='stdclass';
+		return $name=='exception' || $name=='stdclass' || $name=='iterator';
 	}
 
 	abstract function addClass($name, Class_ $class, $file);
@@ -111,6 +127,10 @@ abstract class SymbolTable  {
 	 * @return string
 	 */
 	abstract function getClassFile($className);
+
+	abstract function getTraitFile($name);
+
+	abstract function addTrait($name, Trait_ $trait, $file);
 
 	/**
 	 * @param $interfaceName

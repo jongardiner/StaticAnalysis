@@ -47,9 +47,11 @@ class AnalyzingPhase
 			}
 		}
 		//echo $analyzer->getResults();
+		return ($analyzer->getErrorCount()>0 ? 1 : 0);
 	}
 
 	function runChildProcesses(array $toProcess) {
+		$error=false;
 		$files = [];
 		$groupSize = intval(count($toProcess) / 4);
 		for ($i = 0; $i < 4; ++$i) {
@@ -67,11 +69,14 @@ class AnalyzingPhase
 					echo fread($file, 1000);
 					if (feof($file)) {
 						unset($files[ array_search($file, $files) ]);
-						echo "Exit status: ".pclose($file)."\n";
+						if(!$error) {
+							$error = pclose($file) == 0;
+						}
 					}
 				}
 			}
 		}
+		return $error ? 1 : 0;
 	}
 
 	function run($config, SymbolTable $symbolTable) {
@@ -86,9 +91,9 @@ class AnalyzingPhase
 		}
 
 		if($config['singleProcess']) {
-			$this->phase2($config['basePath'], $toProcess, $symbolTable);
+			return $this->phase2($config['basePath'], $toProcess, $symbolTable);
 		} else {
-			$this->runChildProcesses($toProcess);
+			return $this->runChildProcesses($toProcess);
 		}
 	}
 }

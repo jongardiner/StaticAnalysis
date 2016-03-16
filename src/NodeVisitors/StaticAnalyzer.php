@@ -18,7 +18,7 @@ class StaticAnalyzer implements NodeVisitor {
 	function __construct( $basePath, $index ) {
 		$this->index=$index;
 
-		$this->suites = new JunitXmlTestSuites('My testsuites');
+		$this->suites = new JunitXmlTestSuites('Static Analysis');
 		$suite=$this->suites->addTestSuite("Static Analysis");
 
 		$this->checks = [
@@ -29,17 +29,33 @@ class StaticAnalyzer implements NodeVisitor {
 					new Checks\InterfaceCheck($this->index,$suite)
 				],
 			Node\ClassMethod::class =>
-				[ new Checks\ParamTypesCheck($this->index, $suite) ],
+				[
+					new Checks\ParamTypesCheck($this->index, $suite)
+				],
 			Node\Expr\StaticCall::class =>
-				[ new Checks\StaticCallCheck($this->index,$suite) ],
+				[
+					new Checks\StaticCallCheck($this->index,$suite)
+				],
 			Node\Expr\New_::class =>
-				[ new Checks\InstantiationCheck($this->index, $suite) ],
+				[
+					new Checks\InstantiationCheck($this->index, $suite)
+				],
+			Node\Expr\Instanceof_::class =>
+				[
+					new Checks\InstanceOfCheck($this->index, $suite)
+				],
 			Node\Stmt\Catch_::class =>
-				[ new Checks\CatchCheck($this->index, $suite) ],
+				[
+					new Checks\CatchCheck($this->index, $suite)
+				],
 			Node\Expr\ClassConstFetch::class =>
-				[ new Checks\ClassConstantCheck($this->index, $suite) ],
+				[
+					new Checks\ClassConstantCheck($this->index, $suite)
+				],
 			Node\Expr\FuncCall::class =>
-				[ new Checks\FunctionCallCheck($this->index, $suite) ]
+				[
+					//new Checks\FunctionCallCheck($this->index, $suite)
+				]
 		];
 	}
 	function beforeTraverse(array $nodes) {
@@ -70,5 +86,9 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function getResults() {
 		return $this->suites->getXml();
+	}
+
+	function getErrorCount() {
+		$this->suites->getXmlElement()->attributes->getNamedItem('errors')->nodeValue;
 	}
 }
