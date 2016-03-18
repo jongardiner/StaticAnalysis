@@ -19,9 +19,7 @@ class AncestryCheck extends BaseCheck {
 				$node = $this->symbolTable->getClass($parent);
 				$this->incTests();
 				if (!$node) {
-					$this->emitError('Unable to find parent',
-						$fileName . " " . $current->getLine() . ":Unable to find parent $parent"
-					);
+					$this->emitError($fileName,$current,"Unknown class", "Unable to find parent $parent");
 				}
 			}
 		}

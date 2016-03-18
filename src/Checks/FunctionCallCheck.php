@@ -16,9 +16,7 @@ class FunctionCallCheck extends BaseCheck
 			$function = $this->symbolTable->getFunction($name);
 			$this->incTests();
 			if (!$function) {
-				$this->emitError("Function",
-					$fileName . " " . $node->getLine() . " call to unknown function $name"
-				);
+				$this->emitError($fileName,$node,"Unknown function", "Call to unknown function $name");
 			} else {
 				$minimumArgs = 0;
 				foreach($function->params as $param) {
@@ -26,9 +24,7 @@ class FunctionCallCheck extends BaseCheck
 					$minimumArgs++;
 				}
 				if(count($node->args)<$minimumArgs) {
-					$this->emitError("Function",
-						$fileName." ".$node->getLine()." function call parameter count mismatch to function $name (passed ".count($node->args)." requires $minimumArgs)"
-					);
+					$this->emitError($fileName,$node,"Signature mismatch", "Function call parameter count mismatch to function $name (passed ".count($node->args)." requires $minimumArgs)");
 				}
 			}
 		}

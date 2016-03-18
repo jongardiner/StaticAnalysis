@@ -25,9 +25,7 @@ class ClassConstantCheck extends BaseCheck {
 			if (!$class) {
 				$class = $this->symbolTable->getInterface($name);
 				if (!$class) {
-					$this->emitError("Missing classs",
-						"$fileName " . $node->getLine() . ": That's not a thing.  Can't find class/interface $name"
-					);
+					$this->emitError($fileName,$node,"Unknown class/interface", "That's not a thing.  Can't find class/interface $name");
 					return;
 				}
 			}
@@ -61,9 +59,7 @@ class ClassConstantCheck extends BaseCheck {
 						break;
 					}
 				}
-				$this->emitError("Constant",
-					$fileName . " " . $line . ": reference to unknown constant $name::$constantName"
-				);
+				$this->emitError($fileName,$node,"Unknown constant", "Reference to unknown constant $name::$constantName");
 			}
 		}
 	}

@@ -46,18 +46,14 @@ class StaticCallCheck extends BaseCheck
 			$class = $this->symbolTable->getClass($name);
 			if (!$class) {
 				if (!$this->symbolTable->ignoreType($name)) {
-					$this->emitError('Static call',
-						$fileName . $call->getLine() . ": Static call to unknown class $name::" . $call->name
-					);
+					$this->emitError($fileName,$call,"Unknown class", "Static call to unknown class $name::" . $call->name);
 				}
 			} else {
 
 				$method=$this->findMethod($class, $call->name);
 
 				if(!$method) {
-					$this->emitError('Static call',
-						$fileName . $call->getLine() . ": Unable to find method.  $name::".$call->name
-					);
+					$this->emitError($fileName,$call,"Unknown method", "Unable to find method.  $name::".$call->name);
 				} else {
 					$minimumParams=0;
 					/** @var \PhpParser\Node\Param $param */
@@ -66,9 +62,7 @@ class StaticCallCheck extends BaseCheck
 						$minimumParams++;
 					}
 					if(count($call->args)<$minimumParams) {
-						$this->emitError("Static call",
-							$fileName." ".$call->getLine().": static call to method $name::".$call->name." does not pass enough parameters (".count($call->args)." passed $minimumParams required)"
-						);
+						$this->emitError($fileName,$method,"Signature mismatch", "Static call to method $name::".$call->name." does not pass enough parameters (".count($call->args)." passed $minimumParams required)");
 					}
 				}
 			}

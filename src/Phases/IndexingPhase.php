@@ -9,24 +9,30 @@ use PhpParser\NodeTraverser;
 use Scan\SymbolTable\SymbolTable;
 use Scan\NodeVisitors\SymbolTableIndexer;
 use Scan\Util;
+use Scan\Config;
 
 
 class IndexingPhase
 {
 
-	function index($config, $baseDir, \RecursiveIteratorIterator $it2, SymbolTable $symbolTable, $stubs = false) {
+	function index(Config $config, \RecursiveIteratorIterator $it2, $stubs = false) {
+		$baseDir = $config->getBasePath();
+		$symbolTable = $config->getSymbolTable();
 		$indexer = new SymbolTableIndexer($symbolTable);
-		$traverser = new NodeTraverser;
-		$traverser->addVisitor(new NameResolver());
-		$traverser->addVisitor($indexer);
-		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$traverser1 = new NodeTraverser;
+		$traverser1->addVisitor(new NameResolver());
+		$traverser2 = new NodeTraverser;
+		$traverser2->addVisitor($indexer);
+		$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
+
+		$configArr = $config->getConfigArray();
 
 		$count = 0;
 		foreach ($it2 as $file) {
 			if (($file->getExtension() == "php" || $file->getExtension() =="inc") && $file->isFile()) {
 				$name = Util::removeInitialPath($baseDir, $file->getPathname());
 				try {
-					if (!$stubs && isset($config['ignore']) && is_array($config['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $config['ignore'])) {
+					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
 						continue;
 					}
 					++$count;
@@ -35,7 +41,8 @@ class IndexingPhase
 					$indexer->setFilename($file->getPathname());
 					$stmts = $parser->parse($fileData);
 					if ($stmts) {
-						$traverser->traverse($stmts);
+						$traverser1->traverse($stmts);
+						$traverser2->traverse($stmts);
 					}
 				} catch (Error $e) {
 					echo $name . ' : Parse Error: ' . $e->getMessage() . "\n";
@@ -45,18 +52,22 @@ class IndexingPhase
 		return $count;
 	}
 
-	function run($config, $symbolTable) {
-		$basePath = $config['basePath'];
-		$basePaths = $config['index'];
+	function run(Config $config) {
+		$configArr = $config->getConfigArray();
+		$indexPaths = $configArr['index'];
 
-		foreach ($basePaths as $directory) {
-			//echo $basePath . "/" . $directory . "\n";
-			$it = new \RecursiveDirectoryIterator($basePath . "/" . $directory);
+		foreach ($indexPaths as $directory) {
+			$it = new \RecursiveDirectoryIterator($config->getBasePath() . "/" . $directory);
 			$it2 = new \RecursiveIteratorIterator($it);
-			$this->index($config, $basePath, $it2, $symbolTable);
+			$this->index($config, $it2);
 		}
+		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
+		$it2 = new \RecursiveIteratorIterator($it);
+		$this->index($config, $it2, true);
+
 		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");
 		$it2 = new \RecursiveIteratorIterator($it);
-		$this->index($config, $basePath, $it2, $symbolTable, true);
+		$this->index($config, $it2, true);
+
 	}
 }

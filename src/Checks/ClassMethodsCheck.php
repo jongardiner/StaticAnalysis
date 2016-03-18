@@ -36,9 +36,7 @@ class ClassMethodsCheck extends BaseCheck
 		if (
 			$oldVisibility != $visibility && $oldVisibility == "private"
 		) {
-			$this->emitError("Method",
-				$fileName." ".$method->getLine().":Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod)
-			);
+			$this->emitError($fileName,$method,"Access mismatch", "Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod));
 		}
 
 		return ;

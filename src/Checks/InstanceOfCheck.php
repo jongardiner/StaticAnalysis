@@ -16,9 +16,7 @@ class InstanceOfCheck extends BaseCheck
 					$class = $this->symbolTable->getInterfaceFile($name);
 				}
 				if(!$class) {
-					$this->emitError('Unknown class',
-						$fileName . " " . $node->getLine() . ": instance of references unknown class $name"
-					);
+					$this->emitError($fileName,$node,"Unknown class", "Instance of references unknown class $name");
 				}
 			}
 		}

@@ -17,9 +17,7 @@ class CatchCheck extends BaseCheck
 		}
 		$this->incTests();
 		if (!$this->symbolTable->getClassFile($name) && !$this->symbolTable->getInterfaceFile($name)) {
-			$this->emitError('Unknown class',
-				$fileName . " " . $node->getLine() . ": attempt to catch unknown type: $name"
-			);
+			$this->emitError($fileName,$node,"Unknown class/interface", "Attempt to catch unknown type: $name");
 		}
 	}
 }

@@ -6,22 +6,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 use Webmozart\Glob\Glob;
 
 class Util {
-	static function implodeParts( $parts ) {
-		return isset($parts->parts) ? implode("\\", $parts->parts) : ($parts?: "");
-	}
 
 	static function finalPart( $parts ) {
 		return is_array($parts->parts) ? $parts->parts[ count($parts->parts)-1 ] : $parts;
 	}
-
-	/**
-	 * @param $node Class_|Interface_
-	 * @return string
-	 */
-	static function fqn($node) {
-		return self::implodeParts($node->namespacedName);
-	}
-
 
 	static function methodSignatureString(ClassMethod $method) {
 		$ret = [];

@@ -12,9 +12,7 @@ class ParamTypesCheck extends BaseCheck
 				$file = $this->symbolTable->getClassFile($name1) ?: $this->symbolTable->getInterfaceFile($name1);
 				$this->incTests();
 				if (!$file && !$this->symbolTable->ignoreType($name1)) {
-					$this->emitError("Unknown type",
-						$fileName . " " . $method->getLine() . ":reference to an unknown type $name1 in parameter of " . $method->name
-					);
+					$this->emitError($fileName,$method,"Unknown type", "Reference to an unknown type $name1 in parameter of " . $method->name);
 				}
 			}
 		}

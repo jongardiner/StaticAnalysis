@@ -94,14 +94,15 @@ class Grabber implements NodeVisitor {
 		if($lastFile==$fileName) {
 			$stmts = $lastContents;
 		} else {
-			$lastFile = $fileName;
 			$contents = file_get_contents($fileName);
-			$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
 			$stmts = $parser->parse($contents);
 
 			$traverser = new NodeTraverser;
 			$traverser->addVisitor(new NameResolver());
 			$traverser->traverse( $stmts );
+
+			$lastFile = $fileName;
 			$lastContents=$stmts;
 		}
 

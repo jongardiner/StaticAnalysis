@@ -2,29 +2,43 @@
 
 namespace Scan\Checks;
 
-use Llaumgui\JunitXml\JunitXmlTestElement;
-use Llaumgui\JunitXml\JunitXmlTestSuite;
+use N98\JUnitXml;
+use PhpParser\Node;
 use Scan\SymbolTable\SymbolTable;
 
 abstract class BaseCheck {
-	/** @var JunitXmlTestElement  */
-	protected $case;
+	/** @var JUnitXml\TestSuiteElement */
+	private $suite;
 
 	/** @var SymbolTable */
 	protected $symbolTable;
 
-	function __construct(SymbolTable $symbolTable, JunitXmlTestSuite $suite) {
-		$this->case = $suite->addTest();
-		$this->case->setClassName( get_class($this) );
+	private $files;
+
+	function __construct(SymbolTable $symbolTable, JUnitXml\Document $doc) {
 		$this->symbolTable=$symbolTable;
+		$this->suite=$doc->addTestSuite();
+		$this->suite->setName(get_class($this));
 	}
 
 	function incTests() {
-		$this->case->incAssertions();
+		//$this->suite->addTestCase();
 	}
-	function emitError($name, $message) {
-		$this->case->addFailure($message, $name);
-		echo "ERROR: ".get_class($this).": $message\n";
+
+	function emitError($fileName, Node $node, $name, $message="") {
+		if(!isset($this->files[$fileName])) {
+			$case=$this->suite->addTestCase();
+			$case->setName($fileName);
+			$case->setClassname( get_class($this) );
+			$this->files[$fileName]=$case;
+		} else {
+			$case=$this->files[$fileName];
+		}
+
+		$lineNumber = $node->getLine();
+		$case->addFailure($message . " on line ".$lineNumber, $name);
+		//echo "ERROR: $fileName $lineNumber: $message\n";
+
 	}
 
 	abstract function run($fileName, $node);

@@ -12,49 +12,52 @@ class StaticAnalyzer implements NodeVisitor {
 	private $file;
 	private $checks = [];
 
-	/** @var JunitXmlTestSuites  */
+	/** @var \N98\JUnitXml\Document  */
 	private $suites;
 
-	function __construct( $basePath, $index ) {
+	function __construct( $basePath, $index, \N98\JUnitXml\Document $output ) {
 		$this->index=$index;
+		$this->suites=$output;
 
-		$this->suites = new JunitXmlTestSuites('Static Analysis');
-		$suite=$this->suites->addTestSuite("Static Analysis");
 
 		$this->checks = [
+			\PhpParser\Node\Expr\PropertyFetch::class =>
+				[
+					new Checks\PropertyFetch($this->index, $output)
+				],
 			Node\Stmt\Class_::class =>
 				[
-					new Checks\AncestryCheck($this->index, $suite),
-					new Checks\ClassMethodsCheck($this->index, $suite),
-					new Checks\InterfaceCheck($this->index,$suite)
+					new Checks\AncestryCheck($this->index, $output),
+					new Checks\ClassMethodsCheck($this->index, $output),
+					new Checks\InterfaceCheck($this->index,$output)
 				],
 			Node\ClassMethod::class =>
 				[
-					new Checks\ParamTypesCheck($this->index, $suite)
+					new Checks\ParamTypesCheck($this->index, $output)
 				],
 			Node\Expr\StaticCall::class =>
 				[
-					new Checks\StaticCallCheck($this->index,$suite)
+					new Checks\StaticCallCheck($this->index,$output)
 				],
 			Node\Expr\New_::class =>
 				[
-					new Checks\InstantiationCheck($this->index, $suite)
+					new Checks\InstantiationCheck($this->index, $output)
 				],
 			Node\Expr\Instanceof_::class =>
 				[
-					new Checks\InstanceOfCheck($this->index, $suite)
+					new Checks\InstanceOfCheck($this->index, $output)
 				],
 			Node\Stmt\Catch_::class =>
 				[
-					new Checks\CatchCheck($this->index, $suite)
+					new Checks\CatchCheck($this->index, $output)
 				],
 			Node\Expr\ClassConstFetch::class =>
 				[
-					new Checks\ClassConstantCheck($this->index, $suite)
+					new Checks\ClassConstantCheck($this->index, $output)
 				],
 			Node\Expr\FuncCall::class =>
 				[
-					//new Checks\FunctionCallCheck($this->index, $suite)
+					new Checks\FunctionCallCheck($this->index, $output)
 				]
 		];
 	}
@@ -84,11 +87,18 @@ class StaticAnalyzer implements NodeVisitor {
 		return null;
 	}
 
-	function getResults() {
-		return $this->suites->getXml();
+	function saveResults(\Scan\Config $config) {
+		$this->suites->formatOutput=true;
+
+		if($config->getOutputFile()) {
+			$this->suites->save($config->getOutputFile());
+		} else {
+			echo $this->suites->saveXML();
+		}
 	}
 
 	function getErrorCount() {
-		$this->suites->getXmlElement()->attributes->getNamedItem('errors')->nodeValue;
+		$failures = $this->suites->getElementsByTagName("failure");
+		return $failures->length;;
 	}
 }
