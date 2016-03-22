@@ -2,6 +2,7 @@
 namespace Scan\Checks;
 
 use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\ClassLike;
 
 class FunctionCallCheck extends BaseCheck
 {
@@ -9,7 +10,7 @@ class FunctionCallCheck extends BaseCheck
 	 * @param string                        $fileName
 	 * @param \PhpParser\Node\Expr\FuncCall $node
 	 */
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 
 		if ($node->name instanceof Name) {
 			$name = $node->name->toString();

@@ -1,23 +1,79 @@
 <?php
 namespace Scan\Checks;
 
+use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
 use Scan\NodeVisitors\Grabber;
 use PhpParser\Node\Name;
 
 class ClassConstantCheck extends BaseCheck {
 
-	function run($fileName, $node) {
+	/**
+	 * @param ClassLike $class
+	 * @param string    $constantName
+	 * @return ClassConst
+	 */
+	function findConstant(ClassLike $class, $constantName) {
+		while ($class) {
+			$constants = Grabber::filterByType($class->stmts, ClassConst::class);
+			foreach($constants as $constList) {
+				foreach($constList->consts as $const) {
+					if (strcasecmp($const->name, $constantName) == 0) {
+						return $const;
+					}
+				}
+			}
+
+			if ($class->extends) {
+				$lastClass = get_class($class);
+				$className = strval($class->extends);
+				$class = null;
+				$parentFileName = $this->symbolTable->getClassFile($className);
+				if (!$parentFileName) {
+					$parentFileName = $this->symbolTable->getInterfaceFile($className);
+				}
+
+				if ($parentFileName) {
+					$class = Grabber::getClassFromFile($this->symbolTable, $parentFileName, $className, $lastClass);
+				}
+			} else {
+				break;
+			}
+		}
+		return null;
+	}
+
+	function run($fileName, $node, ClassLike $inside=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);
 
-			// Todo
-			if ($name == 'self' || $name == 'static' || $name == 'parent') {
-				//echo "Static fetch of $name::$constantName\n";
-				return;
-			}
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
+			}
+
+			switch(strtolower($name)) {
+				case 'self':
+				case 'static':
+					if(!$inside) {
+						$this->emitError($fileName, $node, "Scope error", "Can't access using self:: outside of a class");
+						return;
+					}
+					$name = $inside->namespacedName;
+					break;
+				case 'parent':
+					if(!$inside) {
+						$this->emitError($fileName, $node, "Scope error", "Can't access using parent:: outside of a class");
+						return;
+					}
+					if ($inside->extends) {
+						$name = strval($inside->extends);
+					} else {
+						$this->emitError($fileName, $node, "Scope error", "Can't access using parent:: in a class with no parent");
+						return;
+					}
+					break;
 			}
 
 			$this->incTests();
@@ -29,37 +85,11 @@ class ClassConstantCheck extends BaseCheck {
 					return;
 				}
 			}
-			$line = $node->getLine();
-
 
 			if ($node->name != 'class') {
-				while ($class) {
-					$constants = Grabber::filterByType($class->stmts, \PhpParser\Node\Stmt\ClassConst::class);
-					foreach($constants as $constList) {
-						foreach($constList->consts as $const) {
-							if (strcasecmp($const->name, $constantName) == 0) {
-								return;
-							}
-						}
-					}
-
-					if ($class->extends) {
-						$lastClass = get_class($class);
-						$className = strval($class->extends);
-						$class = null;
-						$parentFileName = $this->symbolTable->getClassFile($className);
-						if (!$parentFileName) {
-							$parentFileName = $this->symbolTable->getInterfaceFile($className);
-						}
-
-						if ($fileName) {
-							$class = Grabber::getClassFromFile($parentFileName, $className, $lastClass);
-						}
-					} else {
-						break;
-					}
+				if(!$this->findConstant($class, $constantName)) {
+					$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
 				}
-				$this->emitError($fileName,$node,"Unknown constant", "Reference to unknown constant $name::$constantName");
 			}
 		}
 	}

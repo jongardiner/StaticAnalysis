@@ -8,7 +8,7 @@ use Scan\SymbolTable\SymbolTable;
 
 abstract class BaseCheck {
 	/** @var JUnitXml\TestSuiteElement */
-	private $suite;
+	protected $suite;
 
 	/** @var SymbolTable */
 	protected $symbolTable;
@@ -41,5 +41,5 @@ abstract class BaseCheck {
 
 	}
 
-	abstract function run($fileName, $node);
+	abstract function run($fileName, $node, Node\Stmt\ClassLike $inside=null);
 }

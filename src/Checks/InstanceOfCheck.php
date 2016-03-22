@@ -3,10 +3,11 @@ namespace Scan\Checks;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\ClassLike;
 
 class InstanceOfCheck extends BaseCheck
 {
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {

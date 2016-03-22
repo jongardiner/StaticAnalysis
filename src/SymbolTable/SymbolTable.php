@@ -27,7 +27,7 @@ abstract class SymbolTable  {
 		}
 		$ob=$this->cache->get("Class:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($file, $name, Class_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
 			if($ob) {
 				$this->cache->add("Class:".$name, $ob);
 			}
@@ -42,7 +42,7 @@ abstract class SymbolTable  {
 		}
 		$ob=$this->cache->get("Trait:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($file, $name, Trait_::class);
+			$ob = Grabber::getClassFromFile( $this, $file, $name, Trait_::class);
 			if($ob) {
 				$this->cache->add("Trait:".$name, $ob);
 			}
@@ -57,7 +57,7 @@ abstract class SymbolTable  {
 		}
 		$ob=$this->cache->get("Interface:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($file, $name, Interface_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name, Interface_::class);
 			if($ob) {
 				$this->cache->add("Interface:".$name, $ob);
 			}
@@ -72,7 +72,7 @@ abstract class SymbolTable  {
 		}
 		$ob=$this->cache->get("Function:".$name);
 		if(!$ob) {
-			$ob = Grabber::getClassFromFile($file, $name, Function_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name, Function_::class);
 			if($ob) {
 				$this->cache->add("Function:".$name, $ob);
 			}

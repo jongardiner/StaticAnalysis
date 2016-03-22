@@ -3,18 +3,49 @@ namespace Scan\Checks;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
+use PhpParser\Node\Param;
+use PhpParser\Node\Stmt\ClassLike;
+use Scan\Util;
 
 class InstantiationCheck extends BaseCheck
 {
 
-	function run($fileName, $node) {
+	/**
+	 * @param $fileName
+	 * @param \PhpParser\Node\Expr\New_ $node
+	 */
+	function run($fileName, $node, ClassLike $inside=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
 				$this->incTests();
-				$class = $this->symbolTable->getClassFile($name);
+				$class = $this->symbolTable->getClass($name);
 				if (!$class) {
 					$this->emitError($fileName,$node,"Unknown class", "Attempt to instantiate unknown class $name");
+					return;
+				}
+				$method=Util::findMethod($class,"__construct", $this->symbolTable);
+
+				if(!$method) {
+					$minParams=$maxParams=0;
+				} else {
+					$maxParams = count($method->getParams());
+					$minParams = 0;
+					/** @var Param $param */
+					foreach ($method->getParams() as $param) {
+						if ($param->default) {
+							break;
+						}
+						$minParams++;
+					}
+				}
+
+				$passedArgCount=count($node->args);
+				if($passedArgCount<$minParams) {
+					$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing $passedArgCount count, required count=$minParams");
+				}
+				if($passedArgCount>$maxParams) {
+					//$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing too many parameters ($passedArgCount instead of $maxParams)");
 				}
 			}
 		}

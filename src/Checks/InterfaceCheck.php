@@ -1,6 +1,7 @@
 <?php
 namespace Scan\Checks;
 
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
@@ -98,7 +99,7 @@ class InterfaceCheck extends BaseCheck {
 	 * @param $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
 	 */
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 
 		if ($node->implements) {
 			$arr = is_array($node->implements) ? $node->implements : [$node->implements];

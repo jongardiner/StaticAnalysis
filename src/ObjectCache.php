@@ -14,7 +14,7 @@ class ObjectCache {
 	private $objectCount=0;
 	private $maxObjects=0;
 
-	function __construct($size=100) {
+	function __construct($size=500) {
 		$this->objects=[];
 		$this->objectCount=0;
 		$this->maxObjects=$size;
@@ -23,8 +23,9 @@ class ObjectCache {
 	function add($key,$value) {
 		if(!isset($this->objects[$key])) {
 			if($this->objectCount==$this->maxObjects) {
-				removeLru();
+				$this->removeLru();
 			}
+			$this->objectCount++;
 		} else {
 			unset($this->objects[$key]);
 		}
@@ -36,20 +37,21 @@ class ObjectCache {
 		static $misses=0;
 
 		if(isset($this->objects[$key])) {
-
 			$value=$this->objects[$key];
 			// Remove the key from the current position, and re-add it as the newest item.
 			unset($this->objects[$key]);
 			$this->objects[$key]=$value;
 			$hits++;
+			//printf(" %.1f ($hits/$misses)", $hits/($hits+$misses)*100);
 			return $value;
 		}
+		//printf(" %.1f", $hits/($hits+$misses));
 		$misses++;
 		return null;
 	}
 
 	function removeLru() {
-		array_pop($this->objects);
+		array_shift($this->objects);
 		--$this->objectCount;
 	}
 }

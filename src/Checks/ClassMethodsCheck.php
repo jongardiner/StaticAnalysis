@@ -1,7 +1,9 @@
 <?php
 namespace Scan\Checks;
 
+
 use Scan\Util;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 
@@ -36,8 +38,10 @@ class ClassMethodsCheck extends BaseCheck
 		if (
 			$oldVisibility != $visibility && $oldVisibility == "private"
 		) {
-			$this->emitError($fileName,$method,"Access mismatch", "Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod));
+			$this->emitError($fileName,$method,$method->name."()", "Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod));
 		}
+
+
 
 		return ;
 		// PHP 7, parameter counts and type hints must match.
@@ -66,8 +70,9 @@ class ClassMethodsCheck extends BaseCheck
 	 * @param string                      $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
 	 */
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 		foreach ($this->symbolTable->getClassMethods($node->namespacedName->toString()) as $name => $methodNode) {
+
 			list($parentClass, $parentMethod) = $this->findParentWithMethod($node, $methodNode->name);
 			if ($parentMethod && $methodNode->name != "__construct") {
 				$this->checkMethod($node, $methodNode, $parentClass, $parentMethod);

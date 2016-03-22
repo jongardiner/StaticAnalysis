@@ -4,42 +4,46 @@ namespace Scan\Checks;
 use PhpParser\Node\Param;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
 
 class StaticCallCheck extends BaseCheck
 {
-	protected function findMethod(Class_ $node, $name) {
-		while ($node) {
-			$methods = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\ClassMethod::class);
-			foreach($methods as $method) {
-				if(strcasecmp($method->name,$name)==0) {
-					return $method;
-				}
-			}
-			if ($node->extends) {
-				$parent = $node->extends->toString();
-				$node = $this->symbolTable->getClass($parent);
-			} else {
-				return null;
-			}
-		}
-		return null;
-	}
 
 	/**
 	 * @param $fileName
 	 * @param \PhpParser\Node\Expr\StaticCall $call
 	 */
-	function run($fileName, $call) {
+	function run($fileName, $call, ClassLike $inside=null) {
 		if ($call->class instanceof Name && $call->name instanceof Name) {
+
 			$name = $call->class->toString();
-			// Todo
-			if ($name == 'self' || $name == 'static' || $name == 'parent') {
-				//echo "Static call to $name\n";
-				return;
-			}
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
 			}
+
+			switch(strtolower($name)) {
+				case 'self':
+				case 'static':
+					if(!$inside) {
+						$this->emitError($fileName, $call, "Scope error", "Can't access using self:: outside of a class");
+						return;
+					}
+					$name = $inside->namespacedName;
+					break;
+				case 'parent':
+					if(!$inside) {
+						$this->emitError($fileName, $call, "Scope error", "Can't access using parent:: outside of a class");
+						return;
+					}
+					if ($inside->extends) {
+						$name = strval($inside->extends);
+					} else {
+						$this->emitError($fileName, $call, "Scope error", "Can't access using parent:: in a class with no parent");
+						return;
+					}
+					break;
+			}
+
 
 
 			$this->incTests();
@@ -50,7 +54,7 @@ class StaticCallCheck extends BaseCheck
 				}
 			} else {
 
-				$method=$this->findMethod($class, $call->name);
+				$method=Util::findMethod($class, $call->name, $this->symbolTable);
 
 				if(!$method) {
 					$this->emitError($fileName,$call,"Unknown method", "Unable to find method.  $name::".$call->name);

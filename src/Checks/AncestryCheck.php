@@ -1,7 +1,7 @@
 <?php
 namespace Scan\Checks;
 
-use \Scan\Util;
+use PhpParser\Node\Stmt\ClassLike;
 
 class AncestryCheck extends BaseCheck {
 
@@ -9,7 +9,7 @@ class AncestryCheck extends BaseCheck {
 	 * @param string $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
 	 */
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 		$current = $node;
 		while ($node && $node->extends) {
 			$parent = $node->extends->toString();

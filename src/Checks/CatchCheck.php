@@ -1,15 +1,16 @@
 <?php
 namespace Scan\Checks;
 
+use PhpParser\Node\Stmt\ClassLike;
 use Scan\Util;
 
 class CatchCheck extends BaseCheck
 {
 	/**
 	 * @param string $fileName
-	 * @param PhpParser\Node\Stmt\Catch_ $node
+	 * @param \PhpParser\Node\Stmt\Catch_ $node
 	 */
-	function run($fileName, $node) {
+	function run($fileName, $node, ClassLike $inside=null) {
 
 		$name = $node->type->toString();
 		if ($this->symbolTable->ignoreType($name)) {

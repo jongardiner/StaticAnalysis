@@ -2,9 +2,11 @@
 
 namespace Scan\Checks;
 
+use PhpParser\Node\Stmt\ClassLike;
+
 class ParamTypesCheck extends BaseCheck
 {
-	function run($fileName, $method) {
+	function run($fileName, $method, ClassLike $inside=null) {
 		foreach ($method->params as $index => $param) {
 			$name1 = $param->type->toString();
 			$nameLower = strtolower($name1);

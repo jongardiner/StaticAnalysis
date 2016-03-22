@@ -6,6 +6,7 @@ use PhpParser\NodeVisitor;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
+use Scan\SymbolTable\SymbolTable;
 use Scan\Util;
 
 class Grabber implements NodeVisitor {
@@ -80,15 +81,19 @@ class Grabber implements NodeVisitor {
 	 * @param int $fromVar
 	 * @return null|Class_|Interface_|Trait_
 	 */
-	static function getClassFromStmts( $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
+	static function getClassFromStmts( SymbolTable $table, $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
-		$traverser->traverse( $stmts );
+		$stmts = $traverser->traverse( $stmts );
+
+		$traverser = new NodeTraverser;
+		$traverser->addVisitor( new TraitImportingVisitor($table));
+		$stmts = $traverser->traverse( $stmts );
 		return $grabber->getFoundClass();
 	}
 
-	static function getClassFromFile( $fileName, $className, $classType=Class_::class ) {
+	static function getClassFromFile( SymbolTable $table, $fileName, $className, $classType=Class_::class ) {
 		static $lastFile="";
 		static $lastContents;
 		if($lastFile==$fileName) {
@@ -100,14 +105,18 @@ class Grabber implements NodeVisitor {
 
 			$traverser = new NodeTraverser;
 			$traverser->addVisitor(new NameResolver());
-			$traverser->traverse( $stmts );
+			$stmts = $traverser->traverse( $stmts );
+
+			$traverser = new NodeTraverser;
+			$traverser->addVisitor( new TraitImportingVisitor($table));
+			$stmts = $traverser->traverse( $stmts );
 
 			$lastFile = $fileName;
 			$lastContents=$stmts;
 		}
 
 		if($stmts) {
-			return self::getClassFromStmts($stmts, $className, $classType);
+			return self::getClassFromStmts($table, $stmts, $className, $classType);
 		}
 		return null;
 	}

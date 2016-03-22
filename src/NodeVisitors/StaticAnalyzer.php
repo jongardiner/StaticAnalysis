@@ -1,16 +1,18 @@
 <?php namespace Scan\NodeVisitors;
 
-use Llaumgui\JunitXml\JunitXmlTestSuites;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use Scan\Checks;
 use Scan\SymbolTable\SymbolTable;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Trait_;
 
 class StaticAnalyzer implements NodeVisitor {
 	/** @var  SymbolTable */
 	private $index;
 	private $file;
 	private $checks = [];
+	private $classStack = [];
 
 	/** @var \N98\JUnitXml\Document  */
 	private $suites;
@@ -21,7 +23,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 
 		$this->checks = [
-			\PhpParser\Node\Expr\PropertyFetch::class =>
+			Node\Expr\PropertyFetch::class =>
 				[
 					new Checks\PropertyFetch($this->index, $output)
 				],
@@ -58,6 +60,10 @@ class StaticAnalyzer implements NodeVisitor {
 			Node\Expr\FuncCall::class =>
 				[
 					new Checks\FunctionCallCheck($this->index, $output)
+				],
+			Node\Expr\MethodCall::class =>
+				[
+					new Checks\MethodCall($this->index, $output)
 				]
 		];
 	}
@@ -71,15 +77,21 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function enterNode(Node $node) {
 		$class=get_class($node);
+		if($node instanceof Class_ || $node instanceof Trait_) {
+			array_push($this->classStack, $node);
+		}
 		if(isset($this->checks[$class])) {
 			foreach($this->checks[$class] as $check) {
-				$check->run( $this->file, $node );
+				$check->run( $this->file, $node, end($this->classStack)?:null );
 			}
 		}
 		return null;
 	}
 
 	function leaveNode(Node $node) {
+		if($node instanceof Class_ || $node instanceof Trait_) {
+			array_pop($this->classStack);
+		}
 		return null;
 	}
 
