@@ -58,13 +58,14 @@ class ClassMethodsCheck extends BaseCheck
 			if (
 				strcasecmp($name1, $name2) !== 0
 			) {
-				//$this->emitError("Method",
-				//	$fileName . " " . $method->getLine() . ": parameter mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod)
-				//);
+				$this->emitError("Method",
+					$fileName . " " . $method->getLine() . ": parameter mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod)
+				);
 				break;
 			}
 		}
 	}
+
 
 	/**
 	 * @param string                      $fileName
@@ -72,7 +73,6 @@ class ClassMethodsCheck extends BaseCheck
 	 */
 	function run($fileName, $node, ClassLike $inside=null) {
 		foreach ($this->symbolTable->getClassMethods($node->namespacedName->toString()) as $name => $methodNode) {
-
 			list($parentClass, $parentMethod) = $this->findParentWithMethod($node, $methodNode->name);
 			if ($parentMethod && $methodNode->name != "__construct") {
 				$this->checkMethod($node, $methodNode, $parentClass, $parentMethod);

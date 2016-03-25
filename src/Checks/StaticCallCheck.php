@@ -5,6 +5,7 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use Scan\Util;
 
 class StaticCallCheck extends BaseCheck
 {
@@ -20,6 +21,7 @@ class StaticCallCheck extends BaseCheck
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
 			}
+			$originalName=$name;
 
 			switch(strtolower($name)) {
 				case 'self':
@@ -59,6 +61,10 @@ class StaticCallCheck extends BaseCheck
 				if(!$method) {
 					$this->emitError($fileName,$call,"Unknown method", "Unable to find method.  $name::".$call->name);
 				} else {
+					if(!$method->isStatic() && $originalName!="parent") {
+						$this->emitError($fileName,$call,"Signature mismatch", "Attempt to call non-static method: $name::".$call->name." statically");
+						return;
+					}
 					$minimumParams=0;
 					/** @var \PhpParser\Node\Param $param */
 					foreach($method->params as $param) {

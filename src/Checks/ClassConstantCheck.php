@@ -15,30 +15,46 @@ class ClassConstantCheck extends BaseCheck {
 	 * @return ClassConst
 	 */
 	function findConstant(ClassLike $class, $constantName) {
-		while ($class) {
-			$constants = Grabber::filterByType($class->stmts, ClassConst::class);
-			foreach($constants as $constList) {
-				foreach($constList->consts as $const) {
-					if (strcasecmp($const->name, $constantName) == 0) {
+		$constants = Grabber::filterByType($class->stmts, ClassConst::class);
+		foreach($constants as $constList) {
+			foreach($constList->consts as $const) {
+				if (strcasecmp($const->name, $constantName) == 0) {
+					return $const;
+				}
+			}
+		}
+
+		if ($class->extends) {
+			if(is_array($class->extends)) {
+				foreach($class->extends as $name) {
+					$class=$this->symbolTable->getInterface($name);
+					if($class) {
+						$const=$this->findConstant($class, $constantName);
+						if($const) {
+							return $const;
+						}
+					}
+				}
+			} else {
+				$className = strval($class->extends);
+				$parentClass = $this->symbolTable->getClass($className);
+				if ($parentClass) {
+					$const = $this->findConstant($parentClass, $constantName);
+					if ($const) {
 						return $const;
 					}
 				}
 			}
-
-			if ($class->extends) {
-				$lastClass = get_class($class);
-				$className = strval($class->extends);
-				$class = null;
-				$parentFileName = $this->symbolTable->getClassFile($className);
-				if (!$parentFileName) {
-					$parentFileName = $this->symbolTable->getInterfaceFile($className);
+		}
+		if($class->implements) {
+			foreach($class->implements as $name) {
+				$interfaceClass=$this->symbolTable->getInterface($name);
+				if($interfaceClass) {
+					$const=$this->findConstant($interfaceClass, $constantName);
+					if($const) {
+						return $const;
+					}
 				}
-
-				if ($parentFileName) {
-					$class = Grabber::getClassFromFile($this->symbolTable, $parentFileName, $className, $lastClass);
-				}
-			} else {
-				break;
 			}
 		}
 		return null;
@@ -86,7 +102,7 @@ class ClassConstantCheck extends BaseCheck {
 				}
 			}
 
-			if ($node->name != 'class') {
+			if ($constantName != 'class') {
 				if(!$this->findConstant($class, $constantName)) {
 					$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
 				}

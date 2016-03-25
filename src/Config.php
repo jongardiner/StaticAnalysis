@@ -31,6 +31,7 @@ class Config {
 	/** @var string[]|false The list of files to process */
 	private $fileList=false;
 
+
 	/** @var bool  */
 	private $forceIndex=false;
 
@@ -92,6 +93,12 @@ class Config {
 				case '-n':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
 					$this->processes = intval($argv[++$i]);
+					break;
+				case '-f':
+					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
+					$this->shouldIndex=true;
+					$this->preferredTable=self::SQLITE_SYMBOL_TABLE;
+					$this->fileList=[ $argv[++$i] ];
 					break;
 				case '-o':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;

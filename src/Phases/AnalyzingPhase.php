@@ -79,7 +79,8 @@ class AnalyzingPhase
 		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
 			$group = ($i == 3) ? array_slice($toProcess, $groupSize * 3) : array_slice($toProcess, $groupSize * $i, $groupSize);
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
-			$cmdLine = "php -d memory_limit=1G Scan.php -a -s ";
+			$cmd=$GLOBALS['argv'][0];
+			$cmdLine = "php -d memory_limit=1G $cmd -a -s ";
 			if($config->getOutputFile()) {
 				$outputFileName=$this->getMultipartFileName($config, $i);
 				$cmdLine.=" -o ".escapeshellarg($outputFileName)." ";

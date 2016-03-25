@@ -4,10 +4,6 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
-use PhpParser\Node\Stmt\TraitUse;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\ClassMethod;
 use Scan\Util;
 
 
@@ -36,6 +32,10 @@ class MethodCall extends BaseCheck
 				$method = Util::findMethod($inside,$node->name, $this->symbolTable);
 				if(!$method) {
 					$this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $inside->namespacedName: \$this->".$node->name);
+					return;
+				}
+				if($method->isStatic()) {
+					$this->emitError($fileName, $node, "Unknown method", "Call to call static method of $inside->namespacedName: \$this->".$node->name." non-statically");
 					return;
 				}
 				$minimumArgs = 0;

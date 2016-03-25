@@ -3,6 +3,7 @@
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
 use Scan\SymbolTable\SymbolTable;
 use Webmozart\Glob\Glob;
@@ -77,11 +78,12 @@ class Util {
 	static function findProperty(Class_ $node, $name, SymbolTable $symbolTable) {
 		while ($node) {
 			$properties = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\Property::class);
-			foreach($properties as $propertyList) {
-				/** @var PropertyProperty $propertyProperty */
-				foreach($propertyList as $propertyProperty) {
-					if (strcasecmp($propertyProperty->name, $name) == 0) {
-						return $propertyProperty;
+			/** @var Property[] $propertyList */
+			foreach($properties as $props) {
+				/** @var Property $props */
+				foreach($props->props as $prop) {
+					if (strcasecmp($prop->name, $name) == 0) {
+						return $prop;
 					}
 				}
 			}

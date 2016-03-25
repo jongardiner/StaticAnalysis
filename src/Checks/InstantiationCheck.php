@@ -24,11 +24,21 @@ class InstantiationCheck extends BaseCheck
 					$this->emitError($fileName,$node,"Unknown class", "Attempt to instantiate unknown class $name");
 					return;
 				}
+				if($class->isAbstract()) {
+					$this->emitError($fileName, $node,"Signature mismatch","Attempt to instantiate abstract class $name");
+					return;
+				}
+
 				$method=Util::findMethod($class,"__construct", $this->symbolTable);
+
 
 				if(!$method) {
 					$minParams=$maxParams=0;
 				} else {
+					if($method->isPrivate() && (!$inside || strcasecmp($inside->namespacedName,$name)!=0)) {
+						$this->emitError($fileName,$node,"Signature mismatch", "Attempt to call private constructor outside of class $name");
+						return;
+					}
 					$maxParams = count($method->getParams());
 					$minParams = 0;
 					/** @var Param $param */
