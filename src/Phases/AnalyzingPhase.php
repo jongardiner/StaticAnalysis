@@ -120,7 +120,7 @@ class AnalyzingPhase
 		foreach($configArray['test'] as $directory) {
 			$directory=$basePath."/".$directory;
 			echo "Directory: $directory\n";
-			$it = new \RecursiveDirectoryIterator($directory);
+			$it = new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $it2, $toProcess);
 		}

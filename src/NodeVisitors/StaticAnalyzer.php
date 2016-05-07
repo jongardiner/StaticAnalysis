@@ -27,6 +27,10 @@ class StaticAnalyzer implements NodeVisitor {
 				[
 					new Checks\PropertyFetch($this->index, $output)
 				],
+			Node\Expr\ShellExec::class =>
+				[
+					new Checks\BacktickOperatorCheck($this->index, $output)
+				],
 			Node\Stmt\Class_::class =>
 				[
 					new Checks\AncestryCheck($this->index, $output),

@@ -36,7 +36,7 @@ class IndexingPhase
 						continue;
 					}
 					++$count;
-					//echo " - $count:" . $name . "\n";
+					echo " - $count:" . $name . "\n";
 					$fileData = file_get_contents($file->getPathname());
 					$indexer->setFilename($file->getPathname());
 					$stmts = $parser->parse($fileData);
@@ -57,7 +57,7 @@ class IndexingPhase
 		$indexPaths = $configArr['index'];
 
 		foreach ($indexPaths as $directory) {
-			$it = new \RecursiveDirectoryIterator($config->getBasePath() . "/" . $directory);
+			$it = new \RecursiveDirectoryIterator($config->getBasePath() . "/" . $directory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->index($config, $it2);
 		}

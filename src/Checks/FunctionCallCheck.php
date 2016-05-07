@@ -6,6 +6,7 @@ use PhpParser\Node\Stmt\ClassLike;
 
 class FunctionCallCheck extends BaseCheck
 {
+	static private $dangerous = ["exec"=>true,"shell_exec"=>true, "proc_open"=>true, "passthru"=>true, "popen"=>true, "system"=>true];
 	/**
 	 * @param string                        $fileName
 	 * @param \PhpParser\Node\Expr\FuncCall $node
@@ -15,7 +16,12 @@ class FunctionCallCheck extends BaseCheck
 		if ($node->name instanceof Name) {
 			$name = $node->name->toString();
 			$function = $this->symbolTable->getFunction($name);
+			$toLower = strtolower($name);
 			$this->incTests();
+			if(array_key_exists($toLower, self::$dangerous)) {
+				$this->emitError($fileName, $node, "Security", "Call to dangerous function $name()");
+			}
+
 			if (!$function) {
 				$this->emitError($fileName,$node,"Unknown function", "Call to unknown function $name");
 			} else {
