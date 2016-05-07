@@ -7,9 +7,6 @@ class Config {
 	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process.  */
 	private $processes=1;
 
-	/** @var bool Once indexed, you can re-scan without having to re-index. */
-	private $shouldIndex=false;
-
 	/** @var string Directory containing the config file.  All files are relative to this directory */
 	private $basePath = "";
 
@@ -34,6 +31,9 @@ class Config {
 
 	/** @var bool  */
 	private $forceIndex=false;
+
+	/** @var bool  */
+	private $forceAnalysis=false;
 
 	/** @var string */
 	private $configFileName = "";
@@ -79,7 +79,7 @@ class Config {
 		for($i=1;$i<count($argv);++$i) {
 			switch ($argv[$i]) {
 				case '-a':
-					$this->shouldIndex=false;
+					$this->forceAnalysis=true;
 					break;
 				case '-i':
 					$this->forceIndex=true;
@@ -118,7 +118,9 @@ class Config {
 					$nextArg++;
 			}
 		}
-
+		if($this->preferredTable==self::MEMORY_SYMBOL_TABLE) {
+			$this->forceIndex = true;
+		}
 	}
 
 	function getProcessCount() {
@@ -150,7 +152,11 @@ class Config {
 	}
 
 	function shouldIndex() {
-		return $this->shouldIndex;
+		return $this->forceIndex;
+	}
+
+	function showAnalyze() {
+		return $this->forceAnalysis;
 	}
 
 	private function getSymbolTableFile() {
