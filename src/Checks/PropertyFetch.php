@@ -34,7 +34,7 @@ class PropertyFetch extends BaseCheck
 				//echo "Access ".$node->var->name."->".$node->name."\n";
 				$property = Util::findProperty($inside,$node->name, $this->symbolTable);
 				if(!$property) {
-					$this->emitError($fileName, $node, "Unknown property", "Accessing unknown property of $inside->namespacedName: \$this->" . $node->name);
+					//$this->emitError($fileName, $node, "Unknown property", "Accessing unknown property of $inside->namespacedName: \$this->" . $node->name);
 					return;
 				}
 			}

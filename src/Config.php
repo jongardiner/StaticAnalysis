@@ -181,7 +181,7 @@ class Config {
 		return $this->forceIndex;
 	}
 
-	function showAnalyze() {
+	function shouldAnalyze() {
 		return $this->forceAnalysis;
 	}
 

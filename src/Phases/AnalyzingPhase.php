@@ -83,14 +83,10 @@ class AnalyzingPhase
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
 			$cmd=escapeshellarg($GLOBALS['argv'][0]);
 			$cmdLine = "php -d memory_limit=1G $cmd -a -s ";
-			$cmdLine .=sprintf("-p %d/%d",
-				$config->getPartitionNumber() * $config->getProcessCount() + $i,
-				$config->getPartitions() * $config->getProcessCount());
 			if($config->getOutputFile()) {
 				$outputFileName=$this->getMultipartFileName($config, $i);
 				$cmdLine.=" -o ".escapeshellarg($outputFileName)." ";
 			}
-
 			$cmdLine.= escapeshellarg($config->getConfigFileName()) . " ".escapeshellarg("scan.tmp.$i");
 			echo $cmdLine."\n";
 			$file = popen($cmdLine, "r");

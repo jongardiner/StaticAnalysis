@@ -7,33 +7,9 @@ use Scan\Phases\AnalyzingPhase;
 
 class CommandLineRunner
 {
-	function run(array $argv) {
 
-		set_time_limit(0);
-		date_default_timezone_set("UTC");
-
-		try {
-			$config=new Config($argv);
-			if(!$config->hasFileList()) {
-				echo "Indexing\n";
-				if($config->shouldIndex()) {
-					$indexer=new IndexingPhase();
-					$indexer->run($config);
-				}
-
-				echo "Analyzing\n";
-				$analyzer=new AnalyzingPhase();
-				$exitCode=$analyzer->run($config);
-				echo "\nDone\n\n";
-				exit($exitCode);
-			} else {
-				$list=$config->getFileList();
-				$analyzer=new AnalyzingPhase();
-				exit( $analyzer->phase2($config, $list) );
-			}
-		}
-		catch(InvalidConfigException $exception) {
-			echo "
+	function usage() {
+		echo "
 Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
 where: -p #/#                 = Define the number of partitions and the current partition.
@@ -54,7 +30,42 @@ where: -p #/#                 = Define the number of partitions and the current 
        -o output_file_name    = Output results in junit format to the specified filename
 
 ";
-			exit();
+	}
+
+	function run(array $argv) {
+
+		set_time_limit(0);
+		date_default_timezone_set("UTC");
+
+		try {
+			$config=new Config($argv);
 		}
+		catch(InvalidConfigException $exception) {
+			usage();
+			exit(1);
+		}
+
+		if($config->shouldIndex()) {
+			echo "Indexing\n";
+			$indexer=new IndexingPhase();
+			$indexer->run($config);
+			echo "\nDone\n\n";
+			exit(0);
+		}
+
+		if($config->shouldAnalyze()) {
+			echo "Analyzing\n";
+			$analyzer = new AnalyzingPhase();
+			if(!$config->hasFileList()) {
+				$exitCode = $analyzer->run($config);
+			} else {
+				$list = $config->getFileList();
+				$analyzer = new AnalyzingPhase();
+				$exitCode = $analyzer->phase2($config, $list);
+			}
+			echo "\nDone\n\n";
+			exit($exitCode);
+		}
+
 	}
 }
