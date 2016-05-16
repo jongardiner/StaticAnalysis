@@ -77,10 +77,15 @@ class AnalyzingPhase
 		$files = [];
 		$groupSize = intval(count($toProcess) / $config->getProcessCount());
 		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
-			$group = ($i == 3) ? array_slice($toProcess, $groupSize * 3) : array_slice($toProcess, $groupSize * $i, $groupSize);
+			$group = ($i == $config->getProcessCount()) ?
+				array_slice($toProcess, $groupSize * $config->getProcessCount()) :
+				array_slice($toProcess, $groupSize * $i, $groupSize);
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
-			$cmd=$GLOBALS['argv'][0];
+			$cmd=escapeshellarg($GLOBALS['argv'][0]);
 			$cmdLine = "php -d memory_limit=1G $cmd -a -s ";
+			$cmdLine .=sprintf("-p %d/%d",
+				$config->getPartitionNumber() * $config->getProcessCount() + $i,
+				$config->getPartitions() * $config->getProcessCount());
 			if($config->getOutputFile()) {
 				$outputFileName=$this->getMultipartFileName($config, $i);
 				$cmdLine.=" -o ".escapeshellarg($outputFileName)." ";
@@ -124,6 +129,15 @@ class AnalyzingPhase
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $it2, $toProcess);
 		}
+
+		// First we split up the files by partition.
+		// If we're running multiple child processes, then we'll split the list again.
+		$groupSize = intval(count($toProcess) / $config->getPartitions());
+		$toProcess = ($config->getPartitionNumber() == $config->getPartitions())
+			? array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1))
+			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
+
+		echo "Analyzing ".count($toProcess)." files\n";
 
 		if($config->getProcessCount()>1) {
 			return $this->runChildProcesses($config, $toProcess);

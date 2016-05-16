@@ -16,6 +16,12 @@ class Config {
 	/** @var string  */
 	private $symbolTableFile = "symbol_table.sqlite3";
 
+	/** @var int The number of partitions */
+	private $partitions=1;
+
+	/** @var int Which partition this server is running  */
+	private $partitionNumber=1;
+
 	/** @var string  */
 	private $outputFile = "";
 
@@ -90,6 +96,18 @@ class Config {
 				case '-m':
 					$this->preferredTable=self::MEMORY_SYMBOL_TABLE;
 					break;
+				case '-p':
+					$params = [];
+					if ($i+1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$i+1], $params) ) {
+						throw new InvalidConfigException;
+					}
+					++$i;
+					list($wholeMatch, $this->partitionNumber, $this->partitions) = $params;
+					if($this->partitionNumber<1 || $this->partitionNumber>$this->partitions) {
+						throw new InvalidConfigException;
+					}
+					echo "Partition: ".$this->partitionNumber." of ".$this->partitions."\n";
+					break;
 				case '-n':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
 					$this->processes = intval($argv[++$i]);
@@ -141,6 +159,14 @@ class Config {
 
 	function getConfigFileName() {
 		return $this->configFileName;
+	}
+
+	function getPartitions() {
+		return $this->partitions;
+	}
+
+	function getPartitionNumber() {
+		return $this->partitionNumber;
 	}
 
 	function getBasePath() {

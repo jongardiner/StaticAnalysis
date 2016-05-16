@@ -34,14 +34,24 @@ class CommandLineRunner
 		}
 		catch(InvalidConfigException $exception) {
 			echo "
-Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n processes] [-o output_file_name] config_file
+Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
-where: -n processes        = number of child process to run
-       -a                  = analyze only, don't re-index.  (Will still index if no index exists.)
-       -i                  = force re-index
-       -s                  = prefer sqlite index
-       -m                  = prefer in memory index (only available when -n=1)
-       -o output_file_name = Output results in junit format to the specified filename
+where: -p #/#                 = Define the number of partitions and the current partition.
+                                Use for multiple hosts. Example: -p 1/4
+
+       -n #                   = number of child process to run.
+                                Use for multiple processes on a single host.
+
+       -a                     = run the \"analyze\" operation
+
+       -i                     = run the \"index\" operation.
+                                Defaults to yes if using in memory index.
+
+       -s                     = prefer sqlite index
+
+       -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
+
+       -o output_file_name    = Output results in junit format to the specified filename
 
 ";
 			exit();
