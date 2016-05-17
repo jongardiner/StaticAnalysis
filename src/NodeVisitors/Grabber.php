@@ -6,6 +6,7 @@ use PhpParser\NodeVisitor;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
+use Scan\Exceptions\UnknownTraitException;
 use Scan\SymbolTable\SymbolTable;
 use Scan\Util;
 
@@ -85,11 +86,8 @@ class Grabber implements NodeVisitor {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
-		$stmts = $traverser->traverse( $stmts );
+		$traverser->traverse( $stmts );
 
-		$traverser = new NodeTraverser;
-		$traverser->addVisitor( new TraitImportingVisitor($table));
-		$stmts = $traverser->traverse( $stmts );
 		return $grabber->getFoundClass();
 	}
 
@@ -107,9 +105,14 @@ class Grabber implements NodeVisitor {
 			$traverser->addVisitor(new NameResolver());
 			$stmts = $traverser->traverse( $stmts );
 
-			$traverser = new NodeTraverser;
-			$traverser->addVisitor( new TraitImportingVisitor($table));
-			$stmts = $traverser->traverse( $stmts );
+			try {
+				$traverser = new NodeTraverser;
+				$traverser->addVisitor(new TraitImportingVisitor($table));
+				$stmts = $traverser->traverse($stmts);
+			}
+			catch(UnknownTraitException $e) {
+				// Ignore these for now.
+			}
 
 			$lastFile = $fileName;
 			$lastContents=$stmts;

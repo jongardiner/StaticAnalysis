@@ -88,7 +88,7 @@ class TraitImportingVisitor implements NodeVisitor {
 			$traitName = strval($useTrait);
 			$trait = $this->index->getTrait($traitName);
 			if (!$trait) {
-				throw new UnknownTraitException($traitName, $this->file, $use->getLine());
+				throw new \Scan\Exceptions\UnknownTraitException($traitName, $this->file, $use->getLine());
 			}
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
