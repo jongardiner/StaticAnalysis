@@ -36,7 +36,7 @@ class IndexingPhase
 						continue;
 					}
 					++$count;
-					$config->outputVerbose(" - $count:" . $name . "\n");
+					$config->output(".", " - $count:" . $name);
 					$fileData = file_get_contents($file->getPathname());
 					$indexer->setFilename($file->getPathname());
 					$stmts = $parser->parse($fileData);
@@ -45,7 +45,7 @@ class IndexingPhase
 						$traverser2->traverse($stmts);
 					}
 				} catch (Error $e) {
-					$config->outputVerbose($name . ' : Parse Error: ' . $e->getMessage() . "\n");
+					$config->output('E', $name . ' : Parse Error: ' . $e->getMessage() . "\n");
 				}
 			}
 		}
