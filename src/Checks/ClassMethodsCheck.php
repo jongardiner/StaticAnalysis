@@ -33,7 +33,7 @@ class ClassMethodsCheck extends BaseCheck
 		$oldVisibility = Util::getMethodAccessLevel($parentMethod);
 		// "public" and "protected" can be redefined," private can not.
 		$fileName = $this->symbolTable->getClassFile($class->namespacedName->toString());
-		$fileName = str_replace($this->basePath, "", $fileName);
+		//$fileName = str_replace($this->basePath, "", $fileName);
 		$this->incTests();
 		if (
 			$oldVisibility != $visibility && $oldVisibility == "private"

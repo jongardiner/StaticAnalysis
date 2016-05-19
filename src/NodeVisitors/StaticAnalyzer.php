@@ -17,57 +17,58 @@ class StaticAnalyzer implements NodeVisitor {
 	/** @var \N98\JUnitXml\Document  */
 	private $suites;
 
-	function __construct( $basePath, $index, \N98\JUnitXml\Document $output ) {
+	function __construct( $basePath, $index, \N98\JUnitXml\Document $output, $config ) {
 		$this->index=$index;
 		$this->suites=$output;
 
+		$emitErrors = $config->getOutputLevel()==1;
 
 		$this->checks = [
 			Node\Expr\PropertyFetch::class =>
 				[
-					new Checks\PropertyFetch($this->index, $output)
+					new Checks\PropertyFetch($this->index, $output, $emitErrors)
 				],
 			Node\Expr\ShellExec::class =>
 				[
-					new Checks\BacktickOperatorCheck($this->index, $output)
+					new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors)
 				],
 			Node\Stmt\Class_::class =>
 				[
-					new Checks\AncestryCheck($this->index, $output),
-					new Checks\ClassMethodsCheck($this->index, $output),
-					new Checks\InterfaceCheck($this->index,$output)
+					new Checks\AncestryCheck($this->index, $output, $emitErrors),
+					new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
+					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
 				],
 			Node\ClassMethod::class =>
 				[
-					new Checks\ParamTypesCheck($this->index, $output)
+					new Checks\ParamTypesCheck($this->index, $output, $emitErrors)
 				],
 			Node\Expr\StaticCall::class =>
 				[
-					new Checks\StaticCallCheck($this->index,$output)
+					new Checks\StaticCallCheck($this->index,$output, $emitErrors)
 				],
 			Node\Expr\New_::class =>
 				[
-					new Checks\InstantiationCheck($this->index, $output)
+					new Checks\InstantiationCheck($this->index, $output, $emitErrors)
 				],
 			Node\Expr\Instanceof_::class =>
 				[
-					new Checks\InstanceOfCheck($this->index, $output)
+					new Checks\InstanceOfCheck($this->index, $output, $emitErrors)
 				],
 			Node\Stmt\Catch_::class =>
 				[
-					new Checks\CatchCheck($this->index, $output)
+					new Checks\CatchCheck($this->index, $output, $emitErrors)
 				],
 			Node\Expr\ClassConstFetch::class =>
 				[
-					new Checks\ClassConstantCheck($this->index, $output)
+					new Checks\ClassConstantCheck($this->index, $output, $emitErrors)
 				],
 			Node\Expr\FuncCall::class =>
 				[
-					new Checks\FunctionCallCheck($this->index, $output)
+					new Checks\FunctionCallCheck($this->index, $output, $emitErrors)
 				],
 			Node\Expr\MethodCall::class =>
 				[
-					new Checks\MethodCall($this->index, $output)
+					new Checks\MethodCall($this->index, $output, $emitErrors)
 				]
 		];
 	}

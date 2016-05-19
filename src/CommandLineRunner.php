@@ -29,6 +29,10 @@ where: -p #/#                 = Define the number of partitions and the current 
 
        -o output_file_name    = Output results in junit format to the specified filename
 
+       -v                     = Increase verbosity level.  Can be used once or twice.
+
+       -h  or --help          = Ignore all other options and show this page.
+
 ";
 	}
 
@@ -41,29 +45,29 @@ where: -p #/#                 = Define the number of partitions and the current 
 			$config=new Config($argv);
 		}
 		catch(InvalidConfigException $exception) {
-			usage();
+			$this->usage();
 			exit(1);
 		}
 
 		if($config->shouldIndex()) {
-			echo "Indexing\n";
+			$config->outputExtraVerbose("Indexing\n");
 			$indexer=new IndexingPhase();
 			$indexer->run($config);
-			echo "\nDone\n\n";
+			$config->outputExtraVerbose("\nDone\n\n");
 			exit(0);
 		}
 
 		if($config->shouldAnalyze()) {
-			echo "Analyzing\n";
 			$analyzer = new AnalyzingPhase();
+			$config->outputExtraVerbose("Analyzing\n");
+
 			if(!$config->hasFileList()) {
 				$exitCode = $analyzer->run($config);
 			} else {
 				$list = $config->getFileList();
-				$analyzer = new AnalyzingPhase();
 				$exitCode = $analyzer->phase2($config, $list);
 			}
-			echo "\nDone\n\n";
+			$config->outputExtraVerbose("\nDone\n\n");
 			exit($exitCode);
 		}
 

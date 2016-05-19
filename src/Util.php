@@ -30,8 +30,14 @@ class Util {
 
 	static function matchesGlobs($basePath, $path, $globArr) {
 		foreach($globArr as $glob) {
-			if(Glob::match($path, $basePath."/".$glob)) {
-				return true;
+			if($glob[0]=='/') {
+				if(Glob::match($path, $glob)) {
+					return true;
+				}
+			} else {
+				if(Glob::match($path, $basePath."/".$glob)) {
+					return true;
+				}
 			}
 		}
 		return false;

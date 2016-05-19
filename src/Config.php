@@ -44,6 +44,9 @@ class Config {
 	/** @var string */
 	private $configFileName = "";
 
+	/** @var int  */
+	private $outputLevel = 0;
+
 	/**
 	 * @param string $file File to import.
 	 */
@@ -75,13 +78,19 @@ class Config {
 	}
 
 	/**
+	 * @return int
+	 */
+	function getOutputLevel() {
+		return $this->outputLevel;
+	}
+
+	/**
 	 * @param array $argv
 	 * @return array
 	 * @throws InvalidConfigException
 	 */
 	private function parseArgv(array $argv) {
 		$nextArg=0;
-		$forceIndex=false;
 		for($i=1;$i<count($argv);++$i) {
 			switch ($argv[$i]) {
 				case '-a':
@@ -106,7 +115,9 @@ class Config {
 					if($this->partitionNumber<1 || $this->partitionNumber>$this->partitions) {
 						throw new InvalidConfigException;
 					}
-					echo "Partition: ".$this->partitionNumber." of ".$this->partitions."\n";
+					break;
+				case '-v':
+					$this->outputLevel++;
 					break;
 				case '-n':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
@@ -121,6 +132,10 @@ class Config {
 				case '-o':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
 					$this->outputFile = $argv[++$i];
+					break;
+				case '-h':
+				case '--help':
+					throw new InvalidConfigException;
 					break;
 				default:
 					switch($nextArg) {
@@ -163,6 +178,26 @@ class Config {
 
 	function getPartitions() {
 		return $this->partitions;
+	}
+
+	function output($verbose, $extraVerbose) {
+		if($this->outputLevel==1) {
+			echo $verbose;flush();
+		} else if($this->outputLevel==2) {
+			echo $extraVerbose."\n";flush();
+		}
+	}
+
+	function outputVerbose($string) {
+		if($this->outputLevel>=1) {
+			echo $string;flush();
+		}
+	}
+
+	function outputExtraVerbose($string) {
+		if($this->outputLevel>=2) {
+			echo $string;flush();
+		}
 	}
 
 	function getPartitionNumber() {

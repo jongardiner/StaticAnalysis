@@ -15,10 +15,11 @@ abstract class BaseCheck {
 
 	private $files;
 
-	function __construct(SymbolTable $symbolTable, JUnitXml\Document $doc) {
+	function __construct(SymbolTable $symbolTable, JUnitXml\Document $doc, $emitErrors=false) {
 		$this->symbolTable=$symbolTable;
 		$this->suite=$doc->addTestSuite();
 		$this->suite->setName(get_class($this));
+		$this->emitErrors=$emitErrors;
 	}
 
 	function incTests() {
@@ -37,6 +38,9 @@ abstract class BaseCheck {
 
 		$lineNumber = $node->getLine();
 		$case->addFailure($message . " on line ".$lineNumber, $name);
+		if($this->emitErrors) {
+			echo "E";
+		}
 		//echo "ERROR: $fileName $lineNumber: $message\n";
 
 	}

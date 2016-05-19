@@ -6,6 +6,7 @@ use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Scan\Config;
+use Scan\Exceptions\UnknownTraitException;
 use Scan\Util;
 use Scan\NodeVisitors\StaticAnalyzer;
 
@@ -29,7 +30,7 @@ class AnalyzingPhase
 		$output = new \N98\JUnitXml\Document;
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new NameResolver());
-		$analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output);
+		$analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
 		$traverser2 = new NodeTraverser;
 		$traverser2->addVisitor($analyzer);
 		$parseError = $output->addTestSuite();
@@ -40,6 +41,7 @@ class AnalyzingPhase
 		foreach ($toProcess as $file) {
 			try {
 				$name = Util::removeInitialPath($config->getBasePath(), $file);
+				$config->output(".", $name);
 				$processingCount++;
 				//echo " - $processingCount:" . $file . "\n";
 				$fileData = file_get_contents($file);
@@ -50,12 +52,15 @@ class AnalyzingPhase
 					$traverser2->traverse($stmts);
 				}
 			} catch (Error $e) {
+				$config->output("E", $e->getMessage());
 				$case=$parseError->addTestCase();
 				$case->setName($name);
 				$case->setClassname(__CLASS__);
 				$case->addFailure($e->getMessage(),"Parse error");
+			} catch(\Scan\Exceptions\UnknownTraitException $e) {
+				$config->output("E", $e->getMessage());
 			}
-			echo ".";flush();
+
 		}
 		$analyzer->saveResults( $config );
 		return ($analyzer->getErrorCount()>0 ? 1 : 0);
@@ -87,8 +92,14 @@ class AnalyzingPhase
 				$outputFileName=$this->getMultipartFileName($config, $i);
 				$cmdLine.=" -o ".escapeshellarg($outputFileName)." ";
 			}
+			if($config->getOutputLevel()==1) {
+				$cmdLine.=" -v ";
+			}
+			if($config->getOutputLevel()==2) {
+				$cmdLine.=" -v -v ";
+			}
 			$cmdLine.= escapeshellarg($config->getConfigFileName()) . " ".escapeshellarg("scan.tmp.$i");
-			echo $cmdLine."\n";
+			$config->outputExtraVerbose($cmdLine."\n");
 			$file = popen($cmdLine, "r");
 			$files[] = $file;
 		}
@@ -104,8 +115,11 @@ class AnalyzingPhase
 						if(!$error) {
 							$error = pclose($file) == 0;
 						}
+						$config->outputExtraVerbose("Child process completed\n");
 					}
 				}
+			} else {
+				$config->output("T","Timed out");
 			}
 		}
 		for($i=0;$i<$config->getProcessCount();++$i) {
@@ -120,7 +134,7 @@ class AnalyzingPhase
 		$configArray = $config->getConfigArray();
 		foreach($configArray['test'] as $directory) {
 			$directory=$basePath."/".$directory;
-			echo "Directory: $directory\n";
+			$config->outputVerbose("Directory: $directory\n");
 			$it = new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $it2, $toProcess);
@@ -133,7 +147,7 @@ class AnalyzingPhase
 			? array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1))
 			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
 
-		echo "Analyzing ".count($toProcess)." files\n";
+		$config->outputVerbose("Analyzing ".count($toProcess)." files\n");
 
 		if($config->getProcessCount()>1) {
 			return $this->runChildProcesses($config, $toProcess);
