@@ -41,7 +41,7 @@ class IndexingPhase
 					// If the $fileName is in our phar then make it a relative path so that files that we index don't
 					// depend on the phar file existing in a particular directory.
 					$fileName = $file->getPathname();
-					if(strpos($fileName,"phar://")==0) {
+					if(strpos($fileName,"phar://")===0) {
 						$fileName = str_replace( \Phar::running(), "", $fileName );
 						while($fileName[0]=='/') {
 							$fileName=substr($fileName,1);
@@ -67,7 +67,7 @@ class IndexingPhase
 		$indexPaths = $configArr['index'];
 
 		foreach ($indexPaths as $directory) {
-			$tmpDirectory = strpos($directory, "/") == 0 ? $directory : $config->getBasePath() . "/" . $directory;
+			$tmpDirectory = strpos($directory, "/") === 0 ? $directory : $config->getBasePath() . "/" . $directory;
 			$config->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
 			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
