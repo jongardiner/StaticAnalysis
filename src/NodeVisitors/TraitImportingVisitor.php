@@ -42,15 +42,22 @@ class TraitImportingVisitor implements NodeVisitor {
 		foreach($adaptations as $adaptation) {
 			if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 				// Alias adaptation renames the alias
+				if(!in_array($adaptation->method, $methods)) {
+					continue;
+				}
+
 				if($adaptation->trait=="") {
 					$method = end($methods[$adaptation->method]);
 				} else {
 					$method = $methods[$adaptation->method][$adaptation->trait];
 				}
+
 				$method->name = $adaptation->newName;
-				$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
-				$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
-				$methods[$adaptation->method] = [$adaptation->trait=>$method]; // Remove all other methods.
+				if(property_exists($method, 'type')) {
+					$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
+					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
+					$methods[$adaptation->method] = [$adaptation->trait=>$method]; // Remove all other methods.
+				}
 			} else if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
 				foreach($adaptation->insteadof as $name) {
@@ -92,9 +99,9 @@ class TraitImportingVisitor implements NodeVisitor {
 			}
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					$properties[$stmt->name]=clone $stmt;
+					$properties[$stmt->getType()]=clone $stmt;
 				} else {
-					$methods[$stmt->name][$traitName] = clone $stmt;
+					$methods[$stmt->getType()][$traitName] = clone $stmt;
 				}
 			}
 		}

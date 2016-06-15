@@ -54,10 +54,10 @@ class InterfaceCheck extends BaseCheck {
 					if($method) {
 						return $method;
 					}
-					if (is_array($trait->stmt)) {
-						foreach ($trait->stmt as $stmt) {
+					if (is_array($trait->stmts)) {
+						foreach ($trait->stmts as $stmt) {
 							if ($stmt instanceof TraitUse) {
-								$method = $this->traitImplements($stmt->traits, $methodName);
+								$method = $this->getTraitMethod($fileName, $stmt->traits, $methodName);
 								if ($method) {
 									return $method;
 								}

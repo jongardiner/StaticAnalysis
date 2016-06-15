@@ -46,17 +46,6 @@ class ClassConstantCheck extends BaseCheck {
 				}
 			}
 		}
-		if($class->implements) {
-			foreach($class->implements as $name) {
-				$interfaceClass=$this->symbolTable->getInterface($name);
-				if($interfaceClass) {
-					$const=$this->findConstant($interfaceClass, $constantName);
-					if($const) {
-						return $const;
-					}
-				}
-			}
-		}
 		return null;
 	}
 

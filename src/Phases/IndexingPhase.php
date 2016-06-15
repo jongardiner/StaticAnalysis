@@ -57,7 +57,9 @@ class IndexingPhase
 		$indexPaths = $configArr['index'];
 
 		foreach ($indexPaths as $directory) {
-			$it = new \RecursiveDirectoryIterator($config->getBasePath() . "/" . $directory, \FilesystemIterator::SKIP_DOTS);
+			$tmpDirectory = strpos($directory, "/") == 0 ? $directory : $config->getBasePath() . "/" . $directory;
+			$config->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
+			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->index($config, $it2);
 		}
