@@ -37,8 +37,18 @@ class IndexingPhase
 					}
 					++$count;
 					$config->output(".", " - $count:" . $name);
-					$fileData = file_get_contents($file->getPathname());
-					$indexer->setFilename($file->getPathname());
+
+					// If the $fileName is in our phar then make it a relative path so that files that we index don't
+					// depend on the phar file existing in a particular directory.
+					$fileName = $file->getPathname();
+					if(strpos($fileName,"phar://")==0) {
+						$fileName = str_replace( \Phar::running(), "", $fileName );
+						while($fileName[0]=='/') {
+							$fileName=substr($fileName,1);
+						}
+					}
+					$fileData = file_get_contents($fileName);
+					$indexer->setFilename($fileName);
 					$stmts = $parser->parse($fileData);
 					if ($stmts) {
 						$traverser1->traverse($stmts);
