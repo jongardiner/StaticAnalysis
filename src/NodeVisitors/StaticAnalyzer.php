@@ -36,7 +36,7 @@ class StaticAnalyzer implements NodeVisitor {
 				[
 					new Checks\AncestryCheck($this->index, $output, $emitErrors),
 					new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
-					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
+//					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
 				],
 			Node\ClassMethod::class =>
 				[
