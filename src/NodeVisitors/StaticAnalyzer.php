@@ -30,7 +30,7 @@ class StaticAnalyzer implements NodeVisitor {
 				],
 			Node\Expr\ShellExec::class =>
 				[
-					new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors)
+			//		new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors)
 				],
 			Node\Stmt\Class_::class =>
 				[

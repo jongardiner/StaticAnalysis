@@ -1,11 +1,16 @@
 <?php
-interface Iterator {
+interface Traversable {
+
+}
+
+interface Iterator extends Traversable {
 
 }
 
 interface ArrayAccess {
 
 }
+
 
 function collator_create() { }
 
@@ -34,6 +39,12 @@ function newrelic_end_transaction() { }
 function newrelic_end_of_transaction() { }
 function newrelic_ignore_transaction() {}
 function newrelic_notice_error() { }
+function newrelic_get_browser_timing_header() { }
+function newrelic_get_browser_timing_footer() { }
+
+class SplHeap {
+
+}
 
 class finfo { }
 
