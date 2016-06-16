@@ -2,6 +2,9 @@
 
 // Usage: php -d phar.readonly=false Build.php
 
+if(file_exists("scan.phar")) {
+	unlink("scan.phar");
+}
 $phar = new Phar('scan.phar');
 
 $baseDir=dirname(dirname(__DIR__));

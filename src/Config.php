@@ -54,14 +54,14 @@ class Config {
 
 		$this->parseArgv($argv);
 
-		$this->basePath=dirname(realpath($this->configFileName));
+		$this->basePath=dirname(realpath($this->configFileName))."/";
 		$this->config=json_decode(file_get_contents($this->configFileName),true);
 
 		if($this->processes>1) {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
 
-		if($this->forceIndex) {
+		if($this->forceIndex && file_exists($this->getSymbolTableFile())) {
 			unlink($this->getSymbolTableFile());
 		}
 
@@ -70,10 +70,10 @@ class Config {
 				$this->shouldIndex = true;
 			}
 
-			$this->symbolTable = new \Scan\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile() );
+			$this->symbolTable = new \Scan\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
 		} else {
 			$this->shouldIndex=true;
-			$this->symbolTable = new \Scan\SymbolTable\InMemorySymbolTable();
+			$this->symbolTable = new \Scan\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
 		}
 	}
 

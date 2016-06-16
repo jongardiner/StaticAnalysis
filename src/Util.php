@@ -45,7 +45,11 @@ class Util {
 
 	static function removeInitialPath($path, $name) {
 		if(strpos($name,$path)===0) {
-			return substr($name,strlen($path));
+			$name = substr($name,strlen($path));
+			while($name[0]=="/") {
+				$name=substr($name,1);
+			}
+			return $name;
 		} else {
 			return $name;
 		}

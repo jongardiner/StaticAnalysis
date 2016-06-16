@@ -15,8 +15,8 @@ class SqliteSymbolTable extends SymbolTable {
 	const TYPE_INTERFACE=3;
 	const TYPE_TRAIT=4;
 
-	function __construct($fileName) {
-		parent::__construct();
+	function __construct($fileName, $basePath) {
+		parent::__construct($basePath);
 		$this->con = new \PDO("sqlite:$fileName");
 		$this->init();
 	}
@@ -43,8 +43,8 @@ class SqliteSymbolTable extends SymbolTable {
 		$statement->execute([strtolower($name), $type]);
 
 		$result=$statement->fetch(\Pdo::FETCH_NUM);
-		if(count($result)>0) {
-			return $result[0];
+		if($result) {
+			return $this->adjustBasePath($result[0]);
 	 	} else {
 			return "";
 		}

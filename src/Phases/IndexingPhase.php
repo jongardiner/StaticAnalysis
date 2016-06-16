@@ -31,6 +31,13 @@ class IndexingPhase
 		foreach ($it2 as $file) {
 			if (($file->getExtension() == "php" || $file->getExtension() =="inc") && $file->isFile()) {
 				$name = Util::removeInitialPath($baseDir, $file->getPathname());
+				if(strpos($name,"phar://")===0) {
+					$name = str_replace( \Phar::running(), "", $name );
+					while($name[0]=='/') {
+						$name=substr($name,1);
+					}
+					$name="phar://".$name;
+				}
 				try {
 					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
 						continue;
@@ -40,15 +47,9 @@ class IndexingPhase
 
 					// If the $fileName is in our phar then make it a relative path so that files that we index don't
 					// depend on the phar file existing in a particular directory.
-					$fileName = $file->getPathname();
-					if(strpos($fileName,"phar://")===0) {
-						$fileName = str_replace( \Phar::running(), "", $fileName );
-						while($fileName[0]=='/') {
-							$fileName=substr($fileName,1);
-						}
-					}
-					$fileData = file_get_contents($fileName);
-					$indexer->setFilename($fileName);
+					$fileData = file_get_contents($file->getPathname());
+
+					$indexer->setFilename($name);
 					$stmts = $parser->parse($fileData);
 					if ($stmts) {
 						$traverser1->traverse($stmts);

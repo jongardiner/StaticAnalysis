@@ -16,8 +16,11 @@ abstract class SymbolTable  {
 	 */
 	protected $cache;
 
-	function __construct() {
+	protected $basePath;
+
+	function __construct($basePath) {
 		$this->cache=new ObjectCache();
+		$this->basePath = $basePath;
 	}
 
 	function getClass($name) {
@@ -48,6 +51,22 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ob;
+	}
+
+	/**
+	 * Converts phar:// psuedo-paths to relative paths.
+	 * Converts relative paths to paths relative to $this->basePath
+	 * Leaves absolute paths unchanged
+	 * @param $fileName
+	 * @return string
+	 */
+	function adjustBasePath($fileName) {
+		if(strpos($fileName, "phar://")===0) {
+			$fileName = substr($fileName, 7);
+		} else if(!empty($fileName) && strpos($fileName,"/")!==0) {
+			$fileName = $this->basePath."/".$fileName;
+		}
+		return $fileName;
 	}
 
 	function getInterface($name) {
