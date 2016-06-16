@@ -21,11 +21,11 @@ function rand() { }
 
 function mt_rand() { }
 
-class ImagickException extends Exception {
+function _() { }
+
+class DateTimeImmutable {
 
 }
-
-function _() { }
 
 function cli_set_process_title() { }
 
