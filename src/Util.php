@@ -3,6 +3,7 @@
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
 use Scan\SymbolTable\SymbolTable;

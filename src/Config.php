@@ -51,8 +51,15 @@ class Config {
 	 * @param string $file File to import.
 	 */
 	function __construct($argv) {
+		if(count($argv)<2) {
+			throw new InvalidConfigException;
+		}
 
 		$this->parseArgv($argv);
+
+		if(!$this->configFileName) {
+			throw new InvalidConfigException;
+		}
 
 		$this->basePath=dirname(realpath($this->configFileName))."/";
 		$this->config=json_decode(file_get_contents($this->configFileName),true);
@@ -61,20 +68,20 @@ class Config {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
 
-		if($this->forceIndex && file_exists($this->getSymbolTableFile())) {
-			unlink($this->getSymbolTableFile());
-		}
-
 		if($this->preferredTable==self::SQLITE_SYMBOL_TABLE) {
 			if(!file_exists($this->getSymbolTableFile())) {
-				$this->shouldIndex = true;
+				$this->forceIndex = true;
+			}
+			if($this->forceIndex && file_exists($this->getSymbolTableFile())) {
+				unlink($this->getSymbolTableFile());
 			}
 
 			$this->symbolTable = new \Scan\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
 		} else {
-			$this->shouldIndex=true;
+			$this->forceIndex=true;
 			$this->symbolTable = new \Scan\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
 		}
+
 	}
 
 	/**
@@ -125,7 +132,6 @@ class Config {
 					break;
 				case '-f':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
-					$this->shouldIndex=true;
 					$this->preferredTable=self::SQLITE_SYMBOL_TABLE;
 					$this->fileList=[ $argv[++$i] ];
 					break;
