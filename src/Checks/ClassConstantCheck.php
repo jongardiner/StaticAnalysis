@@ -26,6 +26,7 @@ class ClassConstantCheck extends BaseCheck {
 
 		if ($class->extends) {
 			if(is_array($class->extends)) {
+				// It's an interface, look for the constant in parent interfaces.
 				foreach($class->extends as $name) {
 					$class=$this->symbolTable->getInterface($name);
 					if($class) {
@@ -36,11 +37,25 @@ class ClassConstantCheck extends BaseCheck {
 					}
 				}
 			} else {
+				// It's a class.  Look for the constant in the parent class.
 				$className = strval($class->extends);
 				$parentClass = $this->symbolTable->getClass($className);
 				if ($parentClass) {
 					$const = $this->findConstant($parentClass, $constantName);
 					if ($const) {
+						return $const;
+					}
+				}
+			}
+		}
+
+		// It's a class.  Look for the constant in parent interfaces
+		if($class instanceof Class_ && $class->implements) {
+			foreach($class->implements as $name) {
+				$interface=$this->symbolTable->getInterface($name);
+				if($interface) {
+					$const = $this->findConstant($interface, $constantName);
+					if($const) {
 						return $const;
 					}
 				}
