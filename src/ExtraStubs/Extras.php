@@ -41,6 +41,7 @@ function newrelic_ignore_transaction() {}
 function newrelic_notice_error() { }
 function newrelic_get_browser_timing_header() { }
 function newrelic_get_browser_timing_footer() { }
+function newrelic_name_transaction($name) { }
 
 class SplHeap {
 
