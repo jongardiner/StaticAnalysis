@@ -32,6 +32,25 @@ class DateTimeImmutable {
 
 }
 
+abstract class FilterIterator extends IteratorIterator implements OuterIterator {
+	/* Methods */
+	public abstract function accept ();
+	public function __construct ( Iterator $iterator ) { }
+	public function current () { }
+	public function getInnerIterator () { }
+	public function key() { }
+	public function next() { }
+	public function rewind () { }
+	public function valid () { }
+}
+
+abstract class RecursiveFilterIterator extends FilterIterator implements OuterIterator , RecursiveIterator
+{
+	public function __construct (RecursiveIterator $iterator) { }
+	public function getChildren () { }
+	public function hasChildren () { }
+}
+
 function cli_set_process_title() { }
 
 function newrelic_disable_autorum() { }
@@ -42,6 +61,9 @@ function newrelic_notice_error() { }
 function newrelic_get_browser_timing_header() { }
 function newrelic_get_browser_timing_footer() { }
 function newrelic_name_transaction($name) { }
+
+function curl_file_create($fileName, $mimeType="", $postname="") { }
+
 
 class SplHeap {
 
