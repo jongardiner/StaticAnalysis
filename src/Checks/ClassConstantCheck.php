@@ -4,6 +4,7 @@ namespace Scan\Checks;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Trait_;
 use Scan\NodeVisitors\Grabber;
 use PhpParser\Node\Name;
 
@@ -68,6 +69,11 @@ class ClassConstantCheck extends BaseCheck {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);
+			if($inside instanceof Trait_) {
+				// We can't check constant references inside of traits.
+				// Instead, we import them into the target class and check them there.
+				return;
+			}
 
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
