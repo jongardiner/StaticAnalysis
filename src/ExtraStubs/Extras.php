@@ -32,6 +32,8 @@ class DateTimeImmutable {
 
 }
 
+function memcache_connect($host) { }
+
 abstract class FilterIterator extends IteratorIterator implements OuterIterator {
 	/* Methods */
 	public abstract function accept ();
