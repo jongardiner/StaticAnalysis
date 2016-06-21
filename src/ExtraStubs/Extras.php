@@ -28,9 +28,25 @@ function mt_rand() { }
 
 function _() { }
 
-class DateTimeImmutable {
-
+interface DateTimeInterface {
+	public function diff ( DateTimeInterface $datetime2, $absolute = false );
+	public function format ( $format );
+	public function getOffset();
+	public function getTimestamp();
+	public function getTimezone();
+	public function __wakeup();
 }
+
+class DateTimeImmutable implements DateTimeInterface {
+	public function diff ( DateTimeInterface $datetime2, $absolute = false ) { }
+	public function format ( $format ) { }
+	public function getOffset() { }
+	public function getTimestamp() { }
+	public function getTimezone() { }
+	public function __wakeup() { }
+}
+
+function date_diff($d1,$d2) { }
 
 function memcache_connect($host) { }
 
