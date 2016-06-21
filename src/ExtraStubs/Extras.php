@@ -85,6 +85,9 @@ class Exception {
 	function __construct($message = "", $code = 0,$previous = NULL) {}
 }
 
+class ImagickException extends Exception {
+}
+
 class InvalidArgumentException extends Exception { }
 class RuntimeException extends Exception { }
 class BadMethodCallException extends Exception { }
