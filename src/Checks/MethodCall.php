@@ -79,13 +79,11 @@ class MethodCall extends BaseCheck
 			$this->emitError($fileName, $node, "Signature mismatch", "Function call parameter count mismatch to method " . $method->name . " (passed " . count($node->args) . " requires $minimumArgs)");
 		}
 		foreach ($node->args as $index => $arg) {
-			echo $arg->name . " " . $method->params[$index]->type . "\n";
 			if ($scope && $arg->value instanceof \PhpParser\Node\Expr\Variable && $index < count($method->params) && $method->params[$index]->type) {
 				$variableName = $arg->value->name;
 				$type = $scope->getVarType($variableName);
 				$expectedType = $method->params[$index]->type;
-				echo "Checking parameter: " . $method->params[$index]->type . "\n";
-				if ($type != Scope::NO_TYPE && $type != $method->params[$index]->type) {
+				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type != $method->params[$index]->type) {
 					$this->emitError($fileName, $node, "Signature mistmatch", "Variable passed to method " . $inside->namespacedName . "->" . $node->name . "() parameter $variableName must be a $expectedType, passing $type");
 				}
 			}

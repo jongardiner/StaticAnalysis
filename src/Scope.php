@@ -11,10 +11,13 @@ namespace Scan;
 
 class Scope
 {
-	const NO_TYPE = "";
+	const UNDEFINED = "!0";
+	const MIXED_TYPE = "!1";
+	const SCALAR_TYPE = "!2";
+
 	private $vars = [];
 
-	function addVarType($name, $type) {
+	function setVarType($name, $type) {
 		$this->vars[$name]=$type;
 	}
 
@@ -22,6 +25,6 @@ class Scope
 		if(isset($this->vars[$name])) {
 			return $this->vars[$name];
 		}
-		return isset($this->vars[$name]) ? $this->vars[$name] : "";
+		return isset($this->vars[$name]) ? $this->vars[$name] : self::UNDEFINED;
 	}
 }

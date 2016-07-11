@@ -11,6 +11,8 @@ interface ArrayAccess {
 
 }
 
+function key_exists() { }
+
 
 function collator_create() { }
 
