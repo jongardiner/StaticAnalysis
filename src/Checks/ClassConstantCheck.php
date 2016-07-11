@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use Scan\NodeVisitors\Grabber;
 use PhpParser\Node\Name;
+use Scan\Scope;
 
 class ClassConstantCheck extends BaseCheck {
 
@@ -65,7 +66,7 @@ class ClassConstantCheck extends BaseCheck {
 		return null;
 	}
 
-	function run($fileName, $node, ClassLike $inside=null) {
+	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);

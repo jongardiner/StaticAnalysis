@@ -5,6 +5,7 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use Scan\Scope;
 use Scan\Util;
 
 class StaticCallCheck extends BaseCheck
@@ -14,7 +15,7 @@ class StaticCallCheck extends BaseCheck
 	 * @param $fileName
 	 * @param \PhpParser\Node\Expr\StaticCall $call
 	 */
-	function run($fileName, $call, ClassLike $inside=null) {
+	function run($fileName, $call, ClassLike $inside=null, Scope $scope = null) {
 		if ($call->class instanceof Name && $call->name instanceof Name) {
 
 			$name = $call->class->toString();

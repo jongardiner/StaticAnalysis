@@ -5,6 +5,7 @@ use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
+use Scan\Scope;
 use Scan\Util;
 use PhpParser\Node\Expr\Variable;
 
@@ -16,7 +17,7 @@ class PropertyFetch extends BaseCheck
 	 * @param                                    $fileName
 	 * @param \PhpParser\Node\Expr\PropertyFetch $node
 	 */
-	function run($fileName, $node, ClassLike $inside=null) {
+	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if($node->var instanceof Variable) {
 			if(is_string($node->var->name) && $node->var->name=='this') {
 

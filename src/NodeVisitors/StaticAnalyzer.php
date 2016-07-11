@@ -3,6 +3,7 @@
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use Scan\Checks;
+use Scan\Scope;
 use Scan\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
@@ -13,6 +14,7 @@ class StaticAnalyzer implements NodeVisitor {
 	private $file;
 	private $checks = [];
 	private $classStack = [];
+	private $scopeStack = [];
 
 	/** @var \N98\JUnitXml\Document  */
 	private $suites;
@@ -24,6 +26,13 @@ class StaticAnalyzer implements NodeVisitor {
 		$emitErrors = $config->getOutputLevel()==1;
 
 		$this->checks = [
+			Node\Expr\ConstFetch::class=>
+				[
+
+			//		new Checks\DefinedConstantCheck($this->index, $output, $emitErrors)
+
+				],
+
 			Node\Expr\PropertyFetch::class =>
 				[
 					new Checks\PropertyFetch($this->index, $output, $emitErrors)
@@ -36,7 +45,7 @@ class StaticAnalyzer implements NodeVisitor {
 				[
 					new Checks\AncestryCheck($this->index, $output, $emitErrors),
 					new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
-//					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
+					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
 				],
 			Node\Stmt\ClassMethod::class =>
 				[
@@ -85,17 +94,33 @@ class StaticAnalyzer implements NodeVisitor {
 		if($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
+		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			$this->pushFunctionScope($node);
+		}
 		if(isset($this->checks[$class])) {
 			foreach($this->checks[$class] as $check) {
-				$check->run( $this->file, $node, end($this->classStack)?:null );
+				$check->run( $this->file, $node, end($this->classStack)?:null, end($this->scopeStack)?:null );
 			}
 		}
 		return null;
 	}
 
+	function pushFunctionScope(Node\FunctionLike $func) {
+		$scope=new Scope();
+		foreach($func->getParams() as $param) {
+			echo "Adding ".$param->name." to scope\n";
+			$scope->addVarType(strval($param->name), strval($param->type));
+		}
+		array_push($this->scopeStack, $scope);
+	}
+
 	function leaveNode(Node $node) {
 		if($node instanceof Class_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
+		}
+		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			echo "Pop scope\n";
+			array_pop($this->scopeStack);
 		}
 		return null;
 	}

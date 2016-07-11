@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Expr\FuncCall;
 
 abstract class SymbolTable  {
 
@@ -51,6 +52,11 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ob;
+	}
+
+	function isDefined($name) {
+		$file=$this->getDefineFile($name);
+		return boolval($file);
 	}
 
 	/**
@@ -162,5 +168,9 @@ abstract class SymbolTable  {
 	 * @return string
 	 */
 	abstract function getFunctionFile($methodName);
+
+	abstract function getDefineFile($defineName);
+
+	abstract function addDefine($name, \PhpParser\Node $define, $file);
 
 }

@@ -5,6 +5,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassLike;
+use Scan\Scope;
 use Scan\Util;
 
 class InstantiationCheck extends BaseCheck
@@ -14,7 +15,7 @@ class InstantiationCheck extends BaseCheck
 	 * @param $fileName
 	 * @param \PhpParser\Node\Expr\New_ $node
 	 */
-	function run($fileName, $node, ClassLike $inside=null) {
+	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {

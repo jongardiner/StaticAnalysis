@@ -1,9 +1,11 @@
 <?php namespace Scan\SymbolTable;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
+use PhpParser\Node\Expr\FuncCall;
 
 /**
  * Class SqliteSymbolTable
@@ -14,6 +16,7 @@ class SqliteSymbolTable extends SymbolTable {
 	const TYPE_FUNCTION=2;
 	const TYPE_INTERFACE=3;
 	const TYPE_TRAIT=4;
+	const TYPE_DEFINE=5;
 
 	function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
@@ -64,6 +67,14 @@ class SqliteSymbolTable extends SymbolTable {
 
 	function addTrait($name, Trait_ $trait, $file) {
 		$this->addType($name, $file, self::TYPE_TRAIT);
+	}
+
+	function addDefine($name, Node $define, $file) {
+		$this->addType($name, $file, self::TYPE_DEFINE);
+	}
+
+	function getDefineFile($name) {
+		return $this->getType($name, self::TYPE_DEFINE);
 	}
 
 	function getTraitFile($name) {

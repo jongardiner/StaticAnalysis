@@ -5,9 +5,9 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
-use Scan\Util;
 
 class SymbolTableIndexer implements NodeVisitor {
 	private $index;
@@ -22,6 +22,7 @@ class SymbolTableIndexer implements NodeVisitor {
 	}
 
 	function setFilename($filename) {
+		$this->classStack = [];
 		$this->filename=$filename;
 	}
 
@@ -45,6 +46,23 @@ class SymbolTableIndexer implements NodeVisitor {
 			case Function_::class:
 				$name=$node->namespacedName->toString();
 				$this->index->addFunction($name, $node, $this->filename);
+				break;
+			case \PhpParser\Node\Const_::class:
+
+				if(count($this->classStack)==0) {
+					echo "Const: ".$node->name." ".count($this->classStack)."\n";
+					$defineName = strval($node->name);
+					$this->index->addDefine($defineName, $node, $this->filename);
+				}
+				break;
+			case FuncCall::class:
+				if($node->name instanceof Node\Name) {
+					$name = strval($node->name);
+					if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
+						$defineName = $node->args[0]->value->value;
+						$this->index->addDefine($defineName, $node, $this->filename);
+					}
+				}
 				break;
 			case Trait_::class:
 				$name=$node->namespacedName->toString();
