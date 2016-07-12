@@ -54,13 +54,7 @@ class FunctionCallCheck extends BaseCheck
 	function getReflectedMinimumParams($name) {
 		try {
 			$func=new \ReflectionFunction($name);
-			$func->getParameters();
-			$minimumArgs = 0;
-			foreach($func->getParameters() as $param) {
-				if($param->isOptional()) break;
-				$minimumArgs++;
-			}
-			return $minimumArgs;
+			return $func->getNumberOfRequiredParameters();
 		}
 		catch(\ReflectionException $e) {
 			return -1;

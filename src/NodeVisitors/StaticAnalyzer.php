@@ -26,7 +26,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 		$emitErrors = $config->getOutputLevel()==1;
 
-		$this->checks = [
+		$this->checks = [/*
 			Node\Expr\ConstFetch::class=>
 				[
 			//		new Checks\DefinedConstantCheck($this->index, $output, $emitErrors)
@@ -69,7 +69,7 @@ class StaticAnalyzer implements NodeVisitor {
 			Node\Expr\ClassConstFetch::class =>
 				[
 					new Checks\ClassConstantCheck($this->index, $output, $emitErrors)
-				],
+				],*/
 			Node\Expr\FuncCall::class =>
 				[
 					new Checks\FunctionCallCheck($this->index, $output, $emitErrors)
@@ -123,12 +123,12 @@ class StaticAnalyzer implements NodeVisitor {
 	 * @param Scope     $scope
 	 * @return string
 	 */
-	function inferType(Node\Expr $expr, Scope $scope) {
+	static function inferType(Node\Expr $expr, Scope $scope) {
 		if($expr instanceof Node\Scalar || $expr instanceof Node\Expr\AssignOp) {
 			return Scope::SCALAR_TYPE;
-		} else if($expr instanceof Node\Expr\New_) {
+		} else if($expr instanceof Node\Expr\New_ && !($expr->class instanceof Node)) {
 			return strval($expr->class);
-		} else if($expr instanceof Node\Expr\Variable) {
+		} else if($expr instanceof Node\Expr\Variable && !( $expr->name instanceof Node) ) {
 			$varName= strval($expr->name);
 			$scopeType = $scope->getVarType($varName);
 			if($scopeType!=Scope::UNDEFINED) {
@@ -146,11 +146,11 @@ class StaticAnalyzer implements NodeVisitor {
 	 */
 	private function handleAssignment(Node\Expr\Assign $op) {
 		$scope = end($this->scopeStack);
-		if ($op->var instanceof Node\Expr\Variable) {
+		if ($op->var instanceof Node\Expr\Variable && !($op->var->name instanceof Node)) {
 			$varName = strval($op->var->name);
 
 			$oldType = $scope->getVarType($varName);
-			$newType = $this->inferType($op->expr, $scope);
+			$newType = self::inferType($op->expr, $scope);
 			if ($oldType != $newType) {
 				if ($oldType == Scope::UNDEFINED) {
 					$scope->setVarType($varName, $newType);

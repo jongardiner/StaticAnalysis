@@ -86,6 +86,34 @@ class Util {
 	 * @param SymbolTable $symbolTable
 	 * @return ClassMethod
 	 */
+	static function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if(!$class) {
+				$method=$symbolTable->getAbstractedMethod($className, $name);
+				if($method) {
+					return $method;
+				}
+				return null;
+			}
+
+			$method = $class->getMethod($name);
+			if($method) {
+				return $method;
+			}
+			$className=$class->getParentClassName();
+		}
+		return null;
+	}
+
+
+
+	/**
+	 * @param Class_      $node
+	 * @param             $name
+	 * @param SymbolTable $symbolTable
+	 * @return ClassMethod
+	 */
 	static function findProperty(Class_ $node, $name, SymbolTable $symbolTable) {
 		while ($node) {
 			$properties = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\Property::class);

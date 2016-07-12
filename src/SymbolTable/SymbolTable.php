@@ -25,16 +25,61 @@ abstract class SymbolTable  {
 	}
 
 	function getClass($name) {
+		$cacheName=strtolower($name);
 		$file=$this->getClassFile($name);
 		if(!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Class:".$name);
+		$ob=$this->cache->get("Class:".$cacheName);
 		if(!$ob) {
 			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
 			if($ob) {
-				$this->cache->add("Class:".$name, $ob);
+				$this->cache->add("Class:".$cacheName, $ob);
 			}
+		}
+		return $ob;
+	}
+
+	function getAbstractedClass($name) {
+		$cacheName=strtolower($name);
+		$ob=$this->cache->get("AClass:".$cacheName);
+		$tmp = $this->getClassOrInterface($name);
+		if ($tmp) {
+			$ob=new \Scan\Abstractions\Class_($tmp);
+		} else if(strpos($name,"\\")===false) {
+			try {
+				$refl = new \ReflectionClass($name);
+				if ($refl->isInternal()) {
+					$ob = new \Scan\Abstractions\ReflectedClass($refl);
+				}
+			} catch (\ReflectionException $e) {
+				$ob=null;
+			}
+		}
+		if($ob) {
+			$this->cache->add("AClass:".$cacheName, $ob);
+		}
+		return $ob;
+	}
+
+	function getAbstractedMethod($className, $methodName) {
+		$cacheName=strtolower($className."::".$methodName);
+		$ob=$this->cache->get("AClass:".$cacheName);
+		$tmp = $this->getClassOrInterface($className);
+		if ($tmp) {
+			$ob=new \Scan\Abstractions\Class_($tmp);
+		} else if(strpos($className,"\\")===false) {
+			try {
+				$refl = new \ReflectionMethod($className, $methodName);
+				if ($refl->isInternal()) {
+					$ob = new \Scan\Abstractions\ReflectedClassMethod($refl);
+				}
+			} catch (\ReflectionException $e) {
+				$ob=null;
+			}
+		}
+		if($ob) {
+			$this->cache->add("AClass:".$cacheName, $ob);
 		}
 		return $ob;
 	}
@@ -126,6 +171,10 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ret;
+	}
+
+	function getClassOrInterface($name) {
+		return $this->getClass($name) ?: $this->getInterface($name);
 	}
 
 	function ignoreType($name) {

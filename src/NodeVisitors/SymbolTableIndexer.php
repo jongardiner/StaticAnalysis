@@ -50,7 +50,6 @@ class SymbolTableIndexer implements NodeVisitor {
 			case \PhpParser\Node\Const_::class:
 
 				if(count($this->classStack)==0) {
-					echo "Const: ".$node->name." ".count($this->classStack)."\n";
 					$defineName = strval($node->name);
 					$this->index->addDefine($defineName, $node, $this->filename);
 				}
