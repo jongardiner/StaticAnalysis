@@ -31,6 +31,7 @@ class MethodCall extends BaseCheck
 		$methodName = strval($node->name);
 
 		$varName = "{expr}";
+		$className = "";
 		if($node->var instanceof Variable) {
 			if(gettype($node->var->name)=="string") {
 				$varName = $node->var->name;
@@ -43,7 +44,7 @@ class MethodCall extends BaseCheck
 					$className = strval($inside->namespacedName);
 				}
 			} else if ($scope) {
-				$className = StaticAnalyzer::inferType($node->var, $scope);
+				$className = StaticAnalyzer::inferType($inside, $node->var, $scope);
 			}
 		}
 		if($className!="" && $className[0]!="!") {
@@ -52,8 +53,10 @@ class MethodCall extends BaseCheck
 			if ($method) {
 				$this->checkMethod($fileName, $node, $className, $scope, $method);
 			} else {
-				//echo "Call to unknown method of $className: \$".$varName."->" .$methodName."\n";
-				$this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
+				// If there is a magic __call method, then we can't know if it will handle these calls.
+				if(!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) ) {
+					$this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
+				}
 			}
 		}
 	}
@@ -67,7 +70,7 @@ class MethodCall extends BaseCheck
 	 */
 	protected function checkMethod($fileName, $node, $inside, Scope $scope, FunctionLikeInterface $method) {
 		if ($method->isStatic()) {
-			$this->emitError($fileName, $node, "Unknown method", "Call to call static method of $inside: \$this->" . $method->getName(). " non-statically");
+			//$this->emitError($fileName, $node, "Unknown method", "Call to static method of $inside::" . $method->getName(). " non-statically");
 			return;
 		}
 		$params = $method->getParameters();
@@ -83,7 +86,7 @@ class MethodCall extends BaseCheck
 				$type = $scope->getVarType($variableName);
 				$expectedType = $params[$index]->getType();
 
-				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && strcasecmp($type, $expectedType)!=0) {
+				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
 					$this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter $variableName must be a $expectedType, passing $type");
 				}
 			}

@@ -27,4 +27,13 @@ class Scope
 		}
 		return isset($this->vars[$name]) ? $this->vars[$name] : self::UNDEFINED;
 	}
+
+	/**
+	 * @return Scope
+	 */
+	function getScopeClone() {
+		$ret = new Scope();
+		$ret->vars = $this->vars;
+		return $ret;
+	}
 }

@@ -43,6 +43,7 @@ class FunctionCallCheck extends BaseCheck
 		if(!$function) {
 			return -1;
 		}
+
 		$minimumArgs = 0;
 		foreach($function->params as $param) {
 			if($param->default) break;
@@ -52,6 +53,16 @@ class FunctionCallCheck extends BaseCheck
 	}
 
 	function getReflectedMinimumParams($name) {
+		// Reflection gets this one wrong.
+		if(strcasecmp($name,'define')==0) {
+			return 2;
+		}
+		if(strcasecmp($name,'strtok')==0) {
+			return 1;
+		}
+		if(strcasecmp($name,'implode')==0) {
+			return 1;
+		}
 		try {
 			$func=new \ReflectionFunction($name);
 			return $func->getNumberOfRequiredParameters();

@@ -40,6 +40,35 @@ abstract class SymbolTable  {
 		return $ob;
 	}
 
+	/**
+	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
+	 * @param $potentialParent
+	 * @param $child
+	 * @return bool
+	 */
+	function isParentClassOrInterface($potentialParent, $child) {
+		while($child) {
+			if(strcasecmp($potentialParent,$child)==0) {
+				return true;
+			}
+			$child = $this->getAbstractedClass($child);
+			if(!$child) {
+				return false;
+			}
+			foreach($child->getInterfaceNames() as $interface) {
+				if($this->isParentClassOrInterface($potentialParent, $interface)) {
+					return true;
+				}
+			}
+			$child = $child->getParentClassName();
+		}
+		return false;
+	}
+
+	/**
+	 * @param $name
+	 * @return \Scan\Abstractions\Class_
+	 */
 	function getAbstractedClass($name) {
 		$cacheName=strtolower($name);
 		$ob=$this->cache->get("AClass:".$cacheName);
@@ -163,7 +192,7 @@ abstract class SymbolTable  {
 	function getClassMethods($className) {
 		$ret = [];
 		$class = $this->getClass($className);
-		if(is_array($class->stmts)) {
+		if($class && is_array($class->stmts)) {
 			foreach( $class->stmts as $stmt) {
 				if ($stmt instanceof ClassMethod) {
 					$ret[] = $stmt;

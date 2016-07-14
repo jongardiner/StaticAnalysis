@@ -2,6 +2,7 @@
 
 namespace Scan\Checks;
 
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use Scan\Scope;
 
@@ -12,10 +13,13 @@ class ParamTypesCheck extends BaseCheck
 			if($param->type) {
 				$name1 = strval($param->type);
 				$nameLower = strtolower($name1);
+				if($nameLower=="self" && $inside instanceof Class_) {
+					continue; // No need to consult the symbol table, we're in the class in question.
+				}
 				if ($nameLower != "" && $nameLower != "array" && $nameLower != "callable") {
-					$file = $this->symbolTable->getClassFile($name1) ?: $this->symbolTable->getInterfaceFile($name1);
+					$class = $this->symbolTable->getAbstractedClass($name1);
 					$this->incTests();
-					if (!$file && !$this->symbolTable->ignoreType($name1)) {
+					if (!$class && !$this->symbolTable->ignoreType($name1)) {
 						$this->emitError($fileName, $method, "Unknown type", "Reference to an unknown type $name1 in parameter $index of " . $method->name);
 					}
 				}

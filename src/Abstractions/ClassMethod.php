@@ -1,6 +1,8 @@
 <?php
 namespace Scan\Abstractions;
 
+use Scan\Util;
+
 class ClassMethod implements FunctionLikeInterface {
 	private $method;
 
@@ -29,8 +31,16 @@ class ClassMethod implements FunctionLikeInterface {
 		return $ret;
 	}
 
+	function getAccessLevel() {
+		return Util::getMethodAccessLevel($this->method);
+	}
+
 	function isInternal() {
 		return false;
+	}
+
+	function isAbstract() {
+		return $this->method->isAbstract();
 	}
 
 	function isStatic() {

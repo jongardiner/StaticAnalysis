@@ -1,4 +1,24 @@
 <?php
+
+
+function key_exists() { }
+function collator_create() { }
+function collator_set_attribute() { }
+function collator_compare() { }
+
+function newrelic_disable_autorum() { }
+function newrelic_end_transaction() { }
+function newrelic_end_of_transaction() { }
+function newrelic_ignore_transaction() {}
+function newrelic_notice_error() { }
+function newrelic_get_browser_timing_header() { }
+function newrelic_get_browser_timing_footer() { }
+function newrelic_name_transaction($name) { }
+
+function apache_note($name,$value="") { }
+
+/*
+ *
 interface Traversable {
 
 }
@@ -11,16 +31,9 @@ interface ArrayAccess {
 
 }
 
-function key_exists() { }
-
-
-function collator_create() { }
-
-function collator_set_attribute() { }
-
-function collator_compare() { }
-
 function min($arr) { }
+
+function cli_set_process_title() { }
 
 function max($arr) { }
 
@@ -53,7 +66,6 @@ function date_diff($d1,$d2) { }
 function memcache_connect($host) { }
 
 abstract class FilterIterator extends IteratorIterator implements OuterIterator {
-	/* Methods */
 	public abstract function accept ();
 	public function __construct ( Iterator $iterator ) { }
 	public function current () { }
@@ -71,16 +83,6 @@ abstract class RecursiveFilterIterator extends FilterIterator implements OuterIt
 	public function hasChildren () { }
 }
 
-function cli_set_process_title() { }
-
-function newrelic_disable_autorum() { }
-function newrelic_end_transaction() { }
-function newrelic_end_of_transaction() { }
-function newrelic_ignore_transaction() {}
-function newrelic_notice_error() { }
-function newrelic_get_browser_timing_header() { }
-function newrelic_get_browser_timing_footer() { }
-function newrelic_name_transaction($name) { }
 
 function curl_file_create($fileName, $mimeType="", $postname="") { }
 
@@ -101,9 +103,6 @@ function mysqli_connect() { }
 
 function levenshtein($str1 , $str2) { }
 
-class Exception {
-	function __construct($message = "", $code = 0,$previous = NULL) {}
-}
 
 class ImagickException extends Exception {
 }
@@ -111,3 +110,4 @@ class ImagickException extends Exception {
 class InvalidArgumentException extends Exception { }
 class RuntimeException extends Exception { }
 class BadMethodCallException extends Exception { }
+*/

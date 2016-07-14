@@ -32,6 +32,11 @@ class ReflectedClass implements ClassInterface {
 		return $ret;
 	}
 
+	function hasConstant($name) {
+		$constants = $this->refl->getConstants();
+		return array_key_exists($name, $constants);
+	}
+
 	function getMethod($name) {
 		try {
 			$method = $this->refl->getMethod($name);

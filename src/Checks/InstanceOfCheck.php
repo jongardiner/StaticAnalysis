@@ -13,10 +13,7 @@ class InstanceOfCheck extends BaseCheck
 			$name = $node->class->toString();
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
 				$this->incTests();
-				$class = $this->symbolTable->getClassFile($name);
-				if (!$class) {
-					$class = $this->symbolTable->getInterfaceFile($name);
-				}
+				$class=$this->symbolTable->getAbstractedClass($name);
 				if(!$class) {
 					$this->emitError($fileName,$node,"Unknown class", "Instance of references unknown class $name");
 				}

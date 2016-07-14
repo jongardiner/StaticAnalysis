@@ -16,60 +16,36 @@ class ClassConstantCheck extends BaseCheck {
 	 * @param string    $constantName
 	 * @return ClassConst
 	 */
-	function findConstant(ClassLike $class, $constantName) {
-		$constants = Grabber::filterByType($class->stmts, ClassConst::class);
-		foreach($constants as $constList) {
-			foreach($constList->consts as $const) {
-				if (strcasecmp($const->name, $constantName) == 0) {
-					return $const;
-				}
+	function findConstant(\Scan\Abstractions\ClassInterface $class, $constantName) {
+		if($class->hasConstant($constantName)) {
+			return true;
+		}
+
+		if ($class->getParentClassName()) {
+			$parentClass = $this->symbolTable->getAbstractedClass($class->getParentClassName());
+			if ($parentClass && $this->findConstant($parentClass, $constantName)) {
+				return true;
 			}
 		}
 
-		if ($class->extends) {
-			if(is_array($class->extends)) {
-				// It's an interface, look for the constant in parent interfaces.
-				foreach($class->extends as $name) {
-					$class=$this->symbolTable->getInterface($name);
-					if($class) {
-						$const=$this->findConstant($class, $constantName);
-						if($const) {
-							return $const;
-						}
-					}
-				}
-			} else {
-				// It's a class.  Look for the constant in the parent class.
-				$className = strval($class->extends);
-				$parentClass = $this->symbolTable->getClass($className);
-				if ($parentClass) {
-					$const = $this->findConstant($parentClass, $constantName);
-					if ($const) {
-						return $const;
-					}
-				}
+		foreach($class->getInterfaceNames() as $interfaceName) {
+			$interface=$this->symbolTable->getAbstractedClass($interfaceName);
+			if($interface && $this->findConstant($interface, $constantName)) {
+				return true;
 			}
 		}
 
-		// It's a class.  Look for the constant in parent interfaces
-		if($class instanceof Class_ && $class->implements) {
-			foreach($class->implements as $name) {
-				$interface=$this->symbolTable->getInterface($name);
-				if($interface) {
-					$const = $this->findConstant($interface, $constantName);
-					if($const) {
-						return $const;
-					}
-				}
-			}
-		}
-		return null;
+		return false;
 	}
 
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);
+			if ($constantName == 'class') {
+				return;
+			}
+
 			if($inside instanceof Trait_) {
 				// We can't check constant references inside of traits.
 				// Instead, we import them into the target class and check them there.
@@ -104,19 +80,14 @@ class ClassConstantCheck extends BaseCheck {
 			}
 
 			$this->incTests();
-			$class = $this->symbolTable->getClass($name);
+			$class = $this->symbolTable->getAbstractedClass($name);
 			if (!$class) {
-				$class = $this->symbolTable->getInterface($name);
-				if (!$class) {
-					$this->emitError($fileName,$node,"Unknown class/interface", "That's not a thing.  Can't find class/interface $name");
-					return;
-				}
+				$this->emitError($fileName,$node,"Unknown class/interface", "That's not a thing.  Can't find class/interface $name");
+				return;
 			}
 
-			if ($constantName != 'class') {
-				if(!$this->findConstant($class, $constantName)) {
-					$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
-				}
+			if(!$this->findConstant($class, $constantName)) {
+				$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
 			}
 		}
 	}

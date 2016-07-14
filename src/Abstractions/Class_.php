@@ -1,7 +1,9 @@
 <?php
 namespace Scan\Abstractions;
 
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Interface_;
+use Scan\NodeVisitors\Grabber;
 
 class Class_ implements ClassInterface {
 	private $class;
@@ -46,5 +48,17 @@ class Class_ implements ClassInterface {
 	function getMethod($name) {
 		$method = $this->class->getMethod($name);
 		return $method ?  new ClassMethod($method) : null;
+	}
+
+	function hasConstant($name) {
+		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
+		foreach($constants as $constList) {
+			foreach($constList->consts as $const) {
+				if (strcasecmp($const->name, $name) == 0) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

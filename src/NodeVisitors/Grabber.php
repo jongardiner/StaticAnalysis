@@ -105,13 +105,15 @@ class Grabber implements NodeVisitor {
 			$traverser->addVisitor(new NameResolver());
 			$stmts = $traverser->traverse( $stmts );
 
-			try {
-				$traverser = new NodeTraverser;
-				$traverser->addVisitor(new TraitImportingVisitor($table));
-				$stmts = $traverser->traverse($stmts);
-			}
-			catch(UnknownTraitException $e) {
-				// Ignore these for now.
+			if($classType==Class_::class) {
+				try {
+					$traverser = new NodeTraverser;
+					$traverser->addVisitor(new TraitImportingVisitor($table));
+					$stmts = $traverser->traverse($stmts);
+				} catch (UnknownTraitException $e) {
+					echo "Unknown trait! ".$e->getMessage()."\n";
+					// Ignore these for now.
+				}
 			}
 
 			$lastFile = $fileName;

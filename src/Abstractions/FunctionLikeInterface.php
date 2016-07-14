@@ -8,4 +8,6 @@ interface FunctionLikeInterface {
 	function isStatic();
 	function isInternal();
 	function getName();
+	function getAccessLevel();
+	function isAbstract();
 }

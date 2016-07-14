@@ -21,6 +21,16 @@ class ReflectedClassMethod implements FunctionLikeInterface {
 		return "";
 	}
 
+	function isAbstract() {
+		return $this->refl->isAbstract();
+	}
+
+	function getAccessLevel() {
+		if($this->refl->isPrivate()) return "private";
+		if($this->refl->isPublic()) return "public";
+		if($this->refl->isProtected()) return "protected";
+	}
+
 	function getMinimumRequiredParameters() {
 		return $this->refl->getNumberOfRequiredParameters();
 	}
