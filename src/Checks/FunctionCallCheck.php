@@ -7,6 +7,10 @@ use Scan\Scope;
 
 class FunctionCallCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\FuncCall::class];
+	}
+
 	static private $dangerous = ["exec"=>true,"shell_exec"=>true, "proc_open"=>true, "passthru"=>true, "popen"=>true, "system"=>true];
 	/**
 	 * @param string                        $fileName

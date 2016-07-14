@@ -9,6 +9,9 @@ use Scan\Scope;
 use Scan\Util;
 
 class InterfaceCheck extends BaseCheck {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Stmt\Class_::class];
+	}
 
 	protected function checkMethod(Class_ $class, \Scan\Abstractions\ClassMethod $method, \Scan\Abstractions\ClassInterface $parentClass, \Scan\Abstractions\FunctionLikeInterface $parentMethod) {
 

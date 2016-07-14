@@ -26,60 +26,36 @@ class StaticAnalyzer implements NodeVisitor {
 
 		$emitErrors = $config->getOutputLevel()==1;
 
-		$this->checks = [
-			Node\Expr\ConstFetch::class=>
-				[
-				//	new Checks\DefinedConstantCheck($this->index, $output, $emitErrors)
-				],
-
-			Node\Expr\PropertyFetch::class =>
-				[
-					new Checks\PropertyFetch($this->index, $output, $emitErrors)
-				],
-			Node\Expr\ShellExec::class =>
-				[
-					new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors)
-				],
-			Node\Stmt\Class_::class =>
-				[
-					new Checks\AncestryCheck($this->index, $output, $emitErrors),
-					new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
-					new Checks\InterfaceCheck($this->index,$output, $emitErrors)
-				],
-			Node\Stmt\ClassMethod::class =>
-				[
-					new Checks\ParamTypesCheck($this->index, $output, $emitErrors)
-				],
-			Node\Expr\StaticCall::class =>
-				[
-					new Checks\StaticCallCheck($this->index,$output, $emitErrors)
-				],
-			Node\Expr\New_::class =>
-				[
-					new Checks\InstantiationCheck($this->index, $output, $emitErrors)
-				],
-			Node\Expr\Instanceof_::class =>
-				[
-					new Checks\InstanceOfCheck($this->index, $output, $emitErrors)
-				],
-			Node\Stmt\Catch_::class =>
-				[
-					new Checks\CatchCheck($this->index, $output, $emitErrors)
-				],
-			Node\Expr\ClassConstFetch::class =>
-				[
-					new Checks\ClassConstantCheck($this->index, $output, $emitErrors)
-				],
-			Node\Expr\FuncCall::class =>
-				[
-					new Checks\FunctionCallCheck($this->index, $output, $emitErrors)
-				],
-			Node\Expr\MethodCall::class =>
-				[
-					new Checks\MethodCall($this->index, $output, $emitErrors)
-				]
+		/** @var Checks\BaseCheck[] $checkers */
+		$checkers = [
+			//	new Checks\DefinedConstantCheck($this->index, $output, $emitErrors),
+			new Checks\PropertyFetch($this->index, $output, $emitErrors),
+			//new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors),
+			new Checks\AncestryCheck($this->index, $output, $emitErrors),
+			new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
+			new Checks\InterfaceCheck($this->index,$output, $emitErrors),
+			new Checks\ParamTypesCheck($this->index, $output, $emitErrors),
+			new Checks\StaticCallCheck($this->index,$output, $emitErrors),
+			new Checks\InstantiationCheck($this->index, $output, $emitErrors),
+			new Checks\InstanceOfCheck($this->index, $output, $emitErrors),
+			new Checks\CatchCheck($this->index, $output, $emitErrors),
+			new Checks\ClassConstantCheck($this->index, $output, $emitErrors),
+			new Checks\FunctionCallCheck($this->index, $output, $emitErrors),
+			new Checks\MethodCall($this->index, $output, $emitErrors),
 		];
+
+
+		foreach($checkers as $checker) {
+			foreach($checker->getCheckNodeTypes() as $nodeType) {
+				if(!isset($this->checks[$nodeType])) {
+					$this->checks[$nodeType]=[$checker];
+				} else {
+					$this->checks[$nodeType][] = $checker;
+				}
+			}
+		}
 	}
+
 	function beforeTraverse(array $nodes) {
 		return null;
 	}
@@ -94,7 +70,7 @@ class StaticAnalyzer implements NodeVisitor {
 		if($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
-		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Expr\Closure) {
 			$this->pushFunctionScope($node);
 		}
 		if($node instanceof Node\Expr\Assign) {
@@ -172,6 +148,8 @@ class StaticAnalyzer implements NodeVisitor {
 			if($scopeType!=Scope::UNDEFINED) {
 				return $scopeType;
 			}
+		} else if($expr instanceof Node\Expr\Closure) {
+			return "callable";
 		}
 		return Scope::MIXED_TYPE;
 	}
@@ -220,7 +198,7 @@ class StaticAnalyzer implements NodeVisitor {
 		if($node instanceof Class_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
 		}
-		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || self::isCastableIf($node)) {
+		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Expr\Closure || self::isCastableIf($node)) {
 			array_pop($this->scopeStack);
 		}
 		return null;

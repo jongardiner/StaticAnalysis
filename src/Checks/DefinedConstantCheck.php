@@ -74,6 +74,10 @@ class DefinedConstantCheck extends BaseCheck {
 		}
 	}
 
+	function getCheckNodeTypes() {
+		return [Node\Expr\ConstFetch::class];
+	}
+
 	function isLanguageConst($name) {
 		$consts = ["null","true","false"];
 		foreach($consts as $const) {

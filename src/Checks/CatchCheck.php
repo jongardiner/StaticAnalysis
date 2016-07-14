@@ -7,6 +7,10 @@ use Scan\Util;
 
 class CatchCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [Node\Stmt\Catch_::class];
+	}
+
 	/**
 	 * @param string $fileName
 	 * @param \PhpParser\Node\Stmt\Catch_ $node

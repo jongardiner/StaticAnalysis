@@ -12,6 +12,9 @@ use PhpParser\Node\Expr\Variable;
 
 class PropertyFetch extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [ \PhpParser\Node\Expr\PropertyFetch::class ];
+	}
 
 	/**
 	 * @param                                    $fileName

@@ -11,6 +11,9 @@ use Scan\Util;
 
 class InstantiationCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\New_::class];
+	}
 
 	/**
 	 * @param $fileName

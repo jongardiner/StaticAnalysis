@@ -13,6 +13,9 @@ use Scan\Abstractions\FunctionLikeInterface;
 
 class MethodCall extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\MethodCall::class];
+	}
 
 	/**
 	 * @param                                    $fileName

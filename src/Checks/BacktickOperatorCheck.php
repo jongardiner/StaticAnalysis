@@ -8,6 +8,10 @@ use Scan\Util;
 
 class BacktickOperatorCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\ShellExec::class];
+	}
+
 	/**
 	 * @param string $fileName
 	 * @param \PhpParser\Node\Stmt\Catch_ $node

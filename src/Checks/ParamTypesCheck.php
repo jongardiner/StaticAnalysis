@@ -8,6 +8,14 @@ use Scan\Scope;
 
 class ParamTypesCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [
+			\PhpParser\Node\Stmt\ClassMethod::class,
+			\PhpParser\Node\Stmt\Function_::class,
+			\PhpParser\Node\Expr\Closure::class
+		];
+	}
+
 	function run($fileName, $method, ClassLike $inside=null, Scope $scope=null) {
 		foreach ($method->params as $index => $param) {
 			if($param->type) {

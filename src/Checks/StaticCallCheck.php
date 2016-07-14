@@ -10,6 +10,9 @@ use Scan\Util;
 
 class StaticCallCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\StaticCall::class];
+	}
 
 	/**
 	 * @param $fileName

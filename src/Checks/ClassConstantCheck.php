@@ -11,6 +11,10 @@ use Scan\Scope;
 
 class ClassConstantCheck extends BaseCheck {
 
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\ClassConstFetch::class];
+	}
+
 	/**
 	 * @param ClassLike $class
 	 * @param string    $constantName

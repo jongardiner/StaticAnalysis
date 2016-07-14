@@ -8,6 +8,10 @@ use Scan\Scope;
 
 class InstanceOfCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\Instanceof_::class];
+	}
+
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();

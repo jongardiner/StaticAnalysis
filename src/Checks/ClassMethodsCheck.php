@@ -10,6 +10,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 
 class ClassMethodsCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Stmt\Class_::class];
+	}
+
 	protected function findParentWithMethod(Class_ $node, $name) {
 
 		while ($node) {

@@ -23,6 +23,11 @@ abstract class BaseCheck {
 		$this->emitErrors=$emitErrors;
 	}
 
+	/**
+	 * @return string[]
+	 */
+	abstract function getCheckNodeTypes();
+
 	function incTests() {
 		//$this->suite->addTestCase();
 	}

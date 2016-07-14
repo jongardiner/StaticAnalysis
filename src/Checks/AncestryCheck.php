@@ -8,6 +8,10 @@ use Scan\Scope;
 
 class AncestryCheck extends BaseCheck {
 
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Stmt\Class_::class];
+	}
+
 	/**
 	 * @param string $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
