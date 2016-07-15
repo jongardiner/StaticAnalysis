@@ -73,7 +73,7 @@ class MethodCall extends BaseCheck
 	 */
 	protected function checkMethod($fileName, $node, $inside, Scope $scope, FunctionLikeInterface $method) {
 		if ($method->isStatic()) {
-			//$this->emitError($fileName, $node, "Unknown method", "Call to static method of $inside::" . $method->getName(). " non-statically");
+			$this->emitError($fileName, $node, "Unknown method", "Call to static method of $inside::" . $method->getName(). " non-statically");
 			return;
 		}
 		$params = $method->getParameters();

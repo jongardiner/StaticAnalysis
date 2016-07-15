@@ -16,6 +16,7 @@ function newrelic_get_browser_timing_footer() { }
 function newrelic_name_transaction($name) { }
 
 function apache_note($name,$value="") { }
+function apache_request_headers() { }
 
 /*
  *
