@@ -1,5 +1,7 @@
 <?php namespace Scan\SymbolTable;
 
+use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
@@ -26,6 +28,14 @@ class InMemorySymbolTable extends SymbolTable {
 
 	function addTrait($name, Trait_ $trait, $file) {
 		$this->traits[strtolower($name)]=$file;
+	}
+
+	function addDefine($name, Node $define, $file) {
+		$this->defines[strtolower($name)]=$file;
+	}
+
+	function getDefineFile($name) {
+		return $this->defines[strtolower($name)];
 	}
 
 	function getTraitFile($name) {

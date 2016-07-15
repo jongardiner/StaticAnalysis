@@ -7,6 +7,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Scan\Config;
 use Scan\Exceptions\UnknownTraitException;
+use Scan\NodeVisitors\TraitImportingVisitor;
 use Scan\Util;
 use Scan\NodeVisitors\StaticAnalyzer;
 
@@ -31,8 +32,12 @@ class AnalyzingPhase
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new NameResolver());
 		$analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
-		$traverser2 = new NodeTraverser;
-		$traverser2->addVisitor($analyzer);
+
+		$traverser2 = new NodeTraverser();
+		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
+
+		$traverser3 = new NodeTraverser;
+		$traverser3->addVisitor($analyzer);
 		$parseError = $output->addTestSuite();
 		$parseError->setName(__CLASS__);
 
@@ -48,8 +53,9 @@ class AnalyzingPhase
 				$stmts = $parser->parse($fileData);
 				if ($stmts) {
 					$analyzer->setFile($name);
-					$traverser1->traverse($stmts);
-					$traverser2->traverse($stmts);
+					$stmts=$traverser1->traverse($stmts);
+					$stmts=$traverser2->traverse($stmts);
+					$traverser3->traverse($stmts);
 				}
 			} catch (Error $e) {
 				$config->output("E", $e->getMessage());

@@ -5,16 +5,20 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use Scan\Scope;
 use Scan\Util;
 
 class StaticCallCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Expr\StaticCall::class];
+	}
 
 	/**
 	 * @param $fileName
 	 * @param \PhpParser\Node\Expr\StaticCall $call
 	 */
-	function run($fileName, $call, ClassLike $inside=null) {
+	function run($fileName, $call, ClassLike $inside=null, Scope $scope = null) {
 		if ($call->class instanceof Name && $call->name instanceof Name) {
 
 			$name = $call->class->toString();
@@ -56,7 +60,7 @@ class StaticCallCheck extends BaseCheck
 				}
 			} else {
 
-				$method=Util::findMethod($class, $call->name, $this->symbolTable);
+				$method = Util::findAbstractedMethod($name, $call->name, $this->symbolTable );
 
 				if(!$method) {
 					$this->emitError($fileName,$call,"Unknown method", "Unable to find method.  $name::".$call->name);
@@ -65,12 +69,7 @@ class StaticCallCheck extends BaseCheck
 						$this->emitError($fileName,$call,"Signature mismatch", "Attempt to call non-static method: $name::".$call->name." statically");
 						return;
 					}
-					$minimumParams=0;
-					/** @var \PhpParser\Node\Param $param */
-					foreach($method->params as $param) {
-						if($param->default) break;
-						$minimumParams++;
-					}
+					$minimumParams=$method->getMinimumRequiredParameters();
 					if(count($call->args)<$minimumParams) {
 						$this->emitError($fileName,$method,"Signature mismatch", "Static call to method $name::".$call->name." does not pass enough parameters (".count($call->args)." passed $minimumParams required)");
 					}

@@ -2,6 +2,7 @@
 namespace Scan\Checks;
 
 
+use Scan\Scope;
 use Scan\Util;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Class_;
@@ -9,6 +10,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 
 class ClassMethodsCheck extends BaseCheck
 {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Stmt\Class_::class];
+	}
+
 	protected function findParentWithMethod(Class_ $node, $name) {
 
 		while ($node) {
@@ -71,7 +76,7 @@ class ClassMethodsCheck extends BaseCheck
 	 * @param string                      $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
 	 */
-	function run($fileName, $node, ClassLike $inside=null) {
+	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		foreach ($this->symbolTable->getClassMethods($node->namespacedName->toString()) as $name => $methodNode) {
 			list($parentClass, $parentMethod) = $this->findParentWithMethod($node, $methodNode->name);
 			if ($parentMethod && $methodNode->name != "__construct") {

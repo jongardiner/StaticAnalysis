@@ -81,6 +81,30 @@ class Util {
 	}
 
 	/**
+	 * @param             $className
+	 * @param             $name
+	 * @param SymbolTable $symbolTable
+	 * @return null|Abstractions\Class_|Abstractions\ClassMethod|Abstractions\ReflectedClassMethod
+	 */
+	static function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if(!$class) {
+				return null;
+			}
+
+			$method = $class->getMethod($name);
+			if($method) {
+				return $method;
+			}
+			$className=$class->getParentClassName();
+		}
+		return null;
+	}
+
+
+
+	/**
 	 * @param Class_      $node
 	 * @param             $name
 	 * @param SymbolTable $symbolTable

@@ -99,9 +99,11 @@ class TraitImportingVisitor implements NodeVisitor {
 			}
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					$properties[$stmt->getType()]=clone $stmt;
-				} else {
-					$methods[$stmt->getType()][$traitName] = clone $stmt;
+					foreach($stmt->props as $prop) {
+						$properties[$prop->name] = clone $prop;
+					}
+				} else if($stmt instanceof Node\Stmt\ClassMethod) {
+					$methods[$stmt->name][$traitName] = clone $stmt;
 				}
 			}
 		}
@@ -139,7 +141,8 @@ class TraitImportingVisitor implements NodeVisitor {
 		} else if($node instanceof Node\Stmt\TraitUse) {
 			$class=end($this->classStack);
 			assert($class);
-			return $this->resolveTraits($node,$class);
+			$traits = $this->resolveTraits($node,$class);
+			return $traits;
 		}
 		return null;
 	}

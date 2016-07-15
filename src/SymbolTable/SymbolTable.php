@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Expr\FuncCall;
 
 abstract class SymbolTable  {
 
@@ -24,16 +25,90 @@ abstract class SymbolTable  {
 	}
 
 	function getClass($name) {
+		$cacheName=strtolower($name);
 		$file=$this->getClassFile($name);
 		if(!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Class:".$name);
+		$ob=$this->cache->get("Class:".$cacheName);
 		if(!$ob) {
 			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
 			if($ob) {
-				$this->cache->add("Class:".$name, $ob);
+				$this->cache->add("Class:".$cacheName, $ob);
 			}
+		}
+		return $ob;
+	}
+
+	/**
+	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
+	 * @param $potentialParent
+	 * @param $child
+	 * @return bool
+	 */
+	function isParentClassOrInterface($potentialParent, $child) {
+		while($child) {
+			if(strcasecmp($potentialParent,$child)==0) {
+				return true;
+			}
+			$child = $this->getAbstractedClass($child);
+			if(!$child) {
+				return false;
+			}
+			foreach($child->getInterfaceNames() as $interface) {
+				if($this->isParentClassOrInterface($potentialParent, $interface)) {
+					return true;
+				}
+			}
+			$child = $child->getParentClassName();
+		}
+		return false;
+	}
+
+	/**
+	 * @param $name
+	 * @return \Scan\Abstractions\Class_
+	 */
+	function getAbstractedClass($name) {
+		$cacheName=strtolower($name);
+		$ob=$this->cache->get("AClass:".$cacheName);
+		$tmp = $this->getClassOrInterface($name);
+		if ($tmp) {
+			$ob=new \Scan\Abstractions\Class_($tmp);
+		} else if(strpos($name,"\\")===false) {
+			try {
+				$refl = new \ReflectionClass($name);
+				if ($refl->isInternal()) {
+					$ob = new \Scan\Abstractions\ReflectedClass($refl);
+				}
+			} catch (\ReflectionException $e) {
+				$ob=null;
+			}
+		}
+		if($ob) {
+			$this->cache->add("AClass:".$cacheName, $ob);
+		}
+		return $ob;
+	}
+
+	function getAbstractedMethod($className, $methodName) {
+		$cacheName=strtolower($className."::".$methodName);
+		$ob=$this->cache->get("AClass:".$cacheName);
+		$tmp = $this->getClassOrInterface($className);
+		if ($tmp) {
+			$ob=new \Scan\Abstractions\Class_($tmp);
+		} else if(strpos($className,"\\")===false) {
+			try {
+				$refl = new \ReflectionMethod($className, $methodName);
+				if ($refl->isInternal()) {
+					$ob = new \Scan\Abstractions\ReflectedClassMethod($refl);
+				}
+			} catch (\ReflectionException $e) {
+				$ob=null;
+			}
+		}
+		if($ob) {
+			$this->cache->add("AClass:".$cacheName, $ob);
 		}
 		return $ob;
 	}
@@ -51,6 +126,11 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ob;
+	}
+
+	function isDefined($name) {
+		$file=$this->getDefineFile($name);
+		return boolval($file);
 	}
 
 	/**
@@ -112,7 +192,7 @@ abstract class SymbolTable  {
 	function getClassMethods($className) {
 		$ret = [];
 		$class = $this->getClass($className);
-		if(is_array($class->stmts)) {
+		if($class && is_array($class->stmts)) {
 			foreach( $class->stmts as $stmt) {
 				if ($stmt instanceof ClassMethod) {
 					$ret[] = $stmt;
@@ -120,6 +200,10 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ret;
+	}
+
+	function getClassOrInterface($name) {
+		return $this->getClass($name) ?: $this->getInterface($name);
 	}
 
 	function ignoreType($name) {
@@ -162,5 +246,9 @@ abstract class SymbolTable  {
 	 * @return string
 	 */
 	abstract function getFunctionFile($methodName);
+
+	abstract function getDefineFile($defineName);
+
+	abstract function addDefine($name, \PhpParser\Node $define, $file);
 
 }

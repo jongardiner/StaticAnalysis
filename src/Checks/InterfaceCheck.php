@@ -2,105 +2,73 @@
 namespace Scan\Checks;
 
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
+use Scan\Scope;
 use Scan\Util;
 
 class InterfaceCheck extends BaseCheck {
+	function getCheckNodeTypes() {
+		return [\PhpParser\Node\Stmt\Class_::class];
+	}
 
-	protected function checkMethod(Class_ $class, ClassMethod $method, Interface_ $parentClass, ClassMethod $parentMethod) {
-		$visibility = Util::getMethodAccessLevel($method);
-		$oldVisibility = Util::getMethodAccessLevel($parentMethod);
-		// "public" and "protected" can be redefined," private can not.
-		$fileName = $this->symbolTable->getClassFile($class->namespacedName->toString());
-		//$fileName = str_replace($this->basePath, "", $fileName);
+	protected function checkMethod(Class_ $class, \Scan\Abstractions\ClassMethod $method, \Scan\Abstractions\ClassInterface $parentClass, \Scan\Abstractions\FunctionLikeInterface $parentMethod) {
 
+		$visibility = $method->getAccessLevel();
+		$oldVisibility = $parentMethod->getAccessLevel();
+
+		$fileName = $this->symbolTable->getClassFile( strval($class->namespacedName) );
 		$this->incTests();
+
+		// "public" and "protected" can be redefined," private can not.
 		if (
 			$oldVisibility != $visibility && $oldVisibility == "private"
 		) {
-			$this->emitError($fileName,$method,"Signature mismatch", "Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod));
+			$this->emitError($fileName, $class,"Signature mismatch", "Access level mismatch in ".$method->getName()."() ".$visibility." vs ".$oldVisibility);
 		}
 
-		return ;
-		// PHP 7, parameter counts and type hints must match.
-		$count1 = count($method->params);
-		$count2 = count($parentMethod->params);
+		$params = $method->getParameters();
+		$parentMethodParams = $parentMethod->getParameters();
+		$count1 = count($params);
+		$count2 = count($parentMethodParams);
 		if ($count1 != $count2) {
-			$this->emitError($fileName,$method,"Signature mismatch", "Parameter count mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod));
-		} else foreach ($method->params as $index => $param) {
-			$parentParam = $parentMethod->params[$index];
-			$name1 = strval($param->type);
-			$name2 = strval($parentParam->Type);
+			$this->emitError($fileName,$class,"Signature mismatch", "Parameter count mismatch $count1 vs $count2 in method ".$class->namespacedName."->".$method->getName());
+		} else foreach ($params as $index => $param) {
+			$parentParam = $parentMethodParams[$index];
+			$name1 = strval($param->getType());
+			$name2 = strval($parentParam->getType());
 			if (
 				strcasecmp($name1, $name2) !== 0
 			) {
-				$this->emitError($fileName,$method,"Signature mismatch", "Parameter mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod));
+				$this->emitError($fileName,$class,"Signature mismatch", "Parameter mismatch type mismatch $name1 vs $name2");
 				break;
 			}
 		}
 	}
 
-	protected function getTraitMethod($fileName, array $traitUses, $methodName) {
-		foreach($traitUses as $traits) {
-			foreach ($traits->traits as $name) {
-				$trait = $this->symbolTable->getTrait($name->toString());
-				if (!$trait) {
-					$this->emitError($fileName,$name,"Unknown trait", "Unknown trait " . $name->toString());
-				} else {
-					$method = $trait->getMethod($methodName);
-					if($method) {
-						return $method;
-					}
-					if (is_array($trait->stmts)) {
-						foreach ($trait->stmts as $stmt) {
-							if ($stmt instanceof TraitUse) {
-								$method = $this->getTraitMethod($fileName, $stmt->traits, $methodName);
-								if ($method) {
-									return $method;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	protected function implementsMethod( $fileName, Class_ $node, ClassMethod $interfaceMethod) {
-		while ($node) {
+	protected function implementsMethod( $fileName, Class_ $node, $interfaceMethod) {
+		$current = new \Scan\Abstractions\Class_($node);
+		while (true) {
 			// Is it directly in the class
-			$classMethod = $node->getMethod($interfaceMethod->name);
+			$classMethod = $current->getMethod($interfaceMethod);
 			if ($classMethod) {
 				return $classMethod;
 			}
 
-			// Is it in the trait or a trait that the trait uses.
-			$traits = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, TraitUse::class);
-			$classMethod = $this->getTraitMethod($fileName, $traits, $interfaceMethod->name);
-			if($classMethod) {
-				return $classMethod;
-			}
-
-			if ($node->extends) {
-				$parent = $node->extends->toString();
-				$node = $this->symbolTable->getClass($parent);
+			if ($current->getParentClassName()) {
+				$current = $this->symbolTable->getAbstractedClass($current->getParentClassName());
 			} else {
-				$node=null;
+				return null;
 			}
 		}
-		return null;
-
 	}
 
 	/**
 	 * @param $fileName
 	 * @param \PhpParser\Node\Stmt\Class_ $node
 	 */
-	function run($fileName, $node, ClassLike $inside=null) {
+	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 
 		if ($node->implements) {
 			$arr = is_array($node->implements) ? $node->implements : [$node->implements];
@@ -108,21 +76,21 @@ class InterfaceCheck extends BaseCheck {
 				$name = $interface->toString();
 				$this->incTests();
 				if ($name) {
-					$interface = $this->symbolTable->getInterface($name);
+					$interface = $this->symbolTable->getAbstractedClass($name);
 					if (!$interface) {
 						$this->emitError($fileName,$node,"Unknown interface",  $node->name . " implements unknown interface " . $name);
 					} else {
 						// Don't force abstract classes to implement all methods.
 						if(!$node->isAbstract()) {
-							foreach ($interface->getMethods() as $interfaceMethod) {
+							foreach ($interface->getMethodNames() as $interfaceMethod) {
 								$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
 								if (!$classMethod) {
 									if(!$node->isAbstract()) {
-										$this->emitError($fileName,$node,"Missing implementation", $node->name . " does not implement method " . $interfaceMethod->name);
+										$this->emitError($fileName,$node,"Missing implementation", $node->name . " does not implement method " . $interfaceMethod);
 									}
 								} else {
 									$this->checkMethod(
-										$node,$classMethod, $interface, $interfaceMethod
+										$node,$classMethod, $interface, $interface->getMethod($interfaceMethod)
 									);
 								}
 							}

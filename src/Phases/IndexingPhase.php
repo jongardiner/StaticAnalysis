@@ -74,13 +74,15 @@ class IndexingPhase
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->index($config, $it2);
 		}
+
 		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
 		$it2 = new \RecursiveIteratorIterator($it);
 		$this->index($config, $it2, true);
+/*
 
 		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");
 		$it2 = new \RecursiveIteratorIterator($it);
 		$this->index($config, $it2, true);
-
+*/
 	}
 }

@@ -4,6 +4,7 @@ namespace Scan\Checks;
 
 use N98\JUnitXml;
 use PhpParser\Node;
+use Scan\Scope;
 use Scan\SymbolTable\SymbolTable;
 
 abstract class BaseCheck {
@@ -21,6 +22,11 @@ abstract class BaseCheck {
 		$this->suite->setName(get_class($this));
 		$this->emitErrors=$emitErrors;
 	}
+
+	/**
+	 * @return string[]
+	 */
+	abstract function getCheckNodeTypes();
 
 	function incTests() {
 		//$this->suite->addTestCase();
@@ -45,5 +51,5 @@ abstract class BaseCheck {
 
 	}
 
-	abstract function run($fileName, $node, Node\Stmt\ClassLike $inside=null);
+	abstract function run($fileName, $node, Node\Stmt\ClassLike $inside=null, Scope $scope=null);
 }
