@@ -32,9 +32,6 @@ class ReflectedClassMethod implements FunctionLikeInterface {
 	}
 
 	function getMinimumRequiredParameters() {
-		if(strcasecmp($this->refl->class,'imagick')==0 && strcasecmp($this->refl->getName(),'__construct')==0) {
-			return 0;
-		}
 		return $this->refl->getNumberOfRequiredParameters();
 	}
 

@@ -57,7 +57,10 @@ class MethodCall extends BaseCheck
 				$this->checkMethod($fileName, $node, $className, $scope, $method);
 			} else {
 				// If there is a magic __call method, then we can't know if it will handle these calls.
-				if(!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) ) {
+				if(
+					!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) &&
+					!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
+				) {
 					$this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
 				}
 			}

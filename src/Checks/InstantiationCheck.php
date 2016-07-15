@@ -46,6 +46,10 @@ class InstantiationCheck extends BaseCheck
 					}
 					$maxParams = count($method->getParameters());
 					$minParams = $method->getMinimumRequiredParameters();
+					if(strcasecmp("imagick",$name)==0) {
+						$minParams=0;
+						$maxParams=1;
+					}
 				}
 
 				$passedArgCount=count($node->args);
