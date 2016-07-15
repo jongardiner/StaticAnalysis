@@ -19,7 +19,7 @@ class StaticCallCheck extends BaseCheck
 	 * @param \PhpParser\Node\Expr\StaticCall $call
 	 */
 	function run($fileName, $call, ClassLike $inside=null, Scope $scope = null) {
-		if ($call->class instanceof Name && $call->name instanceof Name) {
+		if ($call->class instanceof Name && gettype($call->name)=="string") {
 
 			$name = $call->class->toString();
 			if ($this->symbolTable->ignoreType($name)) {
@@ -71,7 +71,7 @@ class StaticCallCheck extends BaseCheck
 					}
 					$minimumParams=$method->getMinimumRequiredParameters();
 					if(count($call->args)<$minimumParams) {
-						$this->emitError($fileName,$method,"Signature mismatch", "Static call to method $name::".$call->name." does not pass enough parameters (".count($call->args)." passed $minimumParams required)");
+						$this->emitError($fileName,$call,"Signature mismatch", "Static call to method $name::".$call->name." does not pass enough parameters (".count($call->args)." passed $minimumParams required)");
 					}
 				}
 			}

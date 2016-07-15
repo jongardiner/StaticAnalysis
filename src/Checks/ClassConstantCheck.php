@@ -46,15 +46,6 @@ class ClassConstantCheck extends BaseCheck {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);
-			if ($constantName == 'class') {
-				return;
-			}
-
-			if($inside instanceof Trait_) {
-				// We can't check constant references inside of traits.
-				// Instead, we import them into the target class and check them there.
-				return;
-			}
 
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
@@ -90,7 +81,7 @@ class ClassConstantCheck extends BaseCheck {
 				return;
 			}
 
-			if(!$this->findConstant($class, $constantName)) {
+			if(strcasecmp($constantName,"class")!=0 && !$this->findConstant($class, $constantName)) {
 				$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
 			}
 		}

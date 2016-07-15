@@ -1,6 +1,7 @@
 <?php namespace Scan\NodeVisitors;
 
 use PhpParser\Node;
+use PhpParser\NodeTraverserInterface;
 use PhpParser\NodeVisitor;
 use Scan\Checks;
 use Scan\Scope;
@@ -67,6 +68,9 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function enterNode(Node $node) {
 		$class=get_class($node);
+		if($node instanceof Trait_) {
+			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+		}
 		if($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
@@ -195,7 +199,7 @@ class StaticAnalyzer implements NodeVisitor {
 	}
 
 	function leaveNode(Node $node) {
-		if($node instanceof Class_ || $node instanceof Trait_) {
+		if($node instanceof Class_) {
 			array_pop($this->classStack);
 		}
 		if($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Expr\Closure || self::isCastableIf($node)) {
