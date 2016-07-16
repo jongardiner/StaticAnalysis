@@ -63,7 +63,9 @@ class StaticCallCheck extends BaseCheck
 				$method = Util::findAbstractedMethod($name, $call->name, $this->symbolTable );
 
 				if(!$method) {
-					$this->emitError($fileName,$call,"Unknown method", "Unable to find method.  $name::".$call->name);
+					if(!Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable)) {
+						$this->emitError($fileName, $call, "Unknown method", "Unable to find method.  $name::" . $call->name);
+					}
 				} else {
 					if(!$method->isStatic() && $originalName!="parent") {
 						$this->emitError($fileName,$call,"Signature mismatch", "Attempt to call non-static method: $name::".$call->name." statically");
