@@ -36,7 +36,7 @@ class TraitImportingVisitor implements NodeVisitor {
 
 	/**
 	 * @param TraitUseAdaptation[] $adaptations
-	 * @param array              $methods
+	 * @param array                $methods
 	 */
 	private function resolveAdaptations(array $adaptations, array &$methods) {
 		foreach($adaptations as $adaptation) {
@@ -56,12 +56,16 @@ class TraitImportingVisitor implements NodeVisitor {
 				if(property_exists($method, 'type')) {
 					$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
 					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
-					$methods[$adaptation->method] = [$adaptation->trait=>$method]; // Remove all other methods.
+
+					// Unset it from the old name.
+					unset($methods[$adaptation->method][$adaptation->trait]);
+					// Add it with the new name.
+					$methods[$adaptation->newName][$adaptation->trait]=$method;
 				}
 			} else if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
 				foreach($adaptation->insteadof as $name) {
-					unset($method[$adaptation->method][$name]);
+					unset($methods[$adaptation->method][$name]);
 				}
 			}
 		}
