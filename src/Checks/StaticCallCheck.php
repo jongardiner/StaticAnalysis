@@ -30,6 +30,8 @@ class StaticCallCheck extends BaseCheck
 
 			switch(strtolower($name)) {
 				case 'self':
+					$possibleDynamic = true;
+					// Fall through
 				case 'static':
 					if(!$inside) {
 						$this->emitError($fileName, $call, "Scope error", "Can't access using self:: outside of a class");
@@ -50,9 +52,15 @@ class StaticCallCheck extends BaseCheck
 						return;
 					}
 					break;
+				default:
+					if($inside) {
+						$currentClass = strval($inside->namespacedName);
+						if($this->symbolTable->isParentClassOrInterface($name, $currentClass)) {
+							$possibleDynamic=true;
+						}
+					}
+					break;
 			}
-
-
 
 			$this->incTests();
 			$class = $this->symbolTable->getAbstractedClass($name);
@@ -71,9 +79,14 @@ class StaticCallCheck extends BaseCheck
 						$this->emitError($fileName, $call, "Unknown method", "Unable to find method.  $name::" . $call->name);
 					}
 				} else {
-					if(!$method->isStatic() && !$possibleDynamic) {
-						$this->emitError($fileName,$call,"Signature mismatch", "Attempt to call non-static method: $name::".$call->name." statically");
-						return;
+					if(!$method->isStatic()) {
+						if(!$scope->isStatic() && $possibleDynamic) {
+							if($call->name!="__construct" && $call->class!="parent") {
+								// echo "Static call in $fileName " . $call->getLine() . "\n";
+							}
+						} else {
+							$this->emitError($fileName, $call, "Signature mismatch", "Attempt to call non-static method: $name::" . $call->name . " statically");
+						}
 					}
 					$minimumParams=$method->getMinimumRequiredParameters();
 					if(count($call->args)<$minimumParams) {

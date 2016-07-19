@@ -23,7 +23,7 @@ class StaticAnalyzer implements NodeVisitor {
 	function __construct($basePath, $index, \N98\JUnitXml\Document $output, $config) {
 		$this->index = $index;
 		$this->suites = $output;
-		$this->scopeStack = [new Scope()];
+		$this->scopeStack = [new Scope(true)];
 
 		$emitErrors = $config->getOutputLevel() == 1;
 
@@ -63,7 +63,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function setFile($name) {
 		$this->file = $name;
-		$this->scopeStack = [new Scope()];
+		$this->scopeStack = [new Scope(true)];
 	}
 
 	function enterNode(Node $node) {
@@ -141,7 +141,11 @@ class StaticAnalyzer implements NodeVisitor {
 	}
 
 	function pushFunctionScope(Node\FunctionLike $func) {
-		$scope = new Scope();
+		$isStatic = true;
+		if($func instanceof Node\Stmt\ClassMethod) {
+			$isStatic = $func->isStatic();
+		}
+		$scope = new Scope( $isStatic );
 		foreach ($func->getParams() as $param) {
 			$scope->setVarType(strval($param->name), strval($param->type));
 		}

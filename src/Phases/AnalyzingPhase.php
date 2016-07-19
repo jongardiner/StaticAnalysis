@@ -88,8 +88,8 @@ class AnalyzingPhase
 		$files = [];
 		$groupSize = intval(count($toProcess) / $config->getProcessCount());
 		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
-			$group = ($i == $config->getProcessCount()) ?
-				array_slice($toProcess, $groupSize * $config->getProcessCount()) :
+			$group = ($i == $config->getProcessCount() -1) ?
+				array_slice($toProcess, $groupSize * $i) :
 				array_slice($toProcess, $groupSize * $i, $groupSize);
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
 			$cmd=escapeshellarg($GLOBALS['argv'][0]);
@@ -145,6 +145,7 @@ class AnalyzingPhase
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $it2, $toProcess);
 		}
+		sort($toProcess);
 
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.

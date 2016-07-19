@@ -17,6 +17,16 @@ class Scope
 
 	private $vars = [];
 
+	private $isStatic;
+
+	function __construct($isStatic) {
+		$this->isStatic=$isStatic;
+	}
+
+	function isStatic() {
+		return $this->isStatic;
+	}
+
 	function setVarType($name, $type) {
 		$this->vars[$name]=$type;
 	}
@@ -32,7 +42,7 @@ class Scope
 	 * @return Scope
 	 */
 	function getScopeClone() {
-		$ret = new Scope();
+		$ret = new Scope($this->isStatic);
 		$ret->vars = $this->vars;
 		return $ret;
 	}
