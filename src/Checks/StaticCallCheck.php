@@ -26,6 +26,7 @@ class StaticCallCheck extends BaseCheck
 				return;
 			}
 			$originalName=$name;
+			$possibleDynamic = false;
 
 			switch(strtolower($name)) {
 				case 'self':
@@ -41,6 +42,7 @@ class StaticCallCheck extends BaseCheck
 						$this->emitError($fileName, $call, "Scope error", "Can't access using parent:: outside of a class");
 						return;
 					}
+					$possibleDynamic=true;
 					if ($inside->extends) {
 						$name = strval($inside->extends);
 					} else {
@@ -63,11 +65,13 @@ class StaticCallCheck extends BaseCheck
 				$method = Util::findAbstractedMethod($name, $call->name, $this->symbolTable );
 
 				if(!$method) {
-					if(!Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable)) {
+					if(!Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable) &&
+						(!$possibleDynamic || !Util::findAbstractedMethod($name,"__call", $this->symbolTable))
+					) {
 						$this->emitError($fileName, $call, "Unknown method", "Unable to find method.  $name::" . $call->name);
 					}
 				} else {
-					if(!$method->isStatic() && $originalName!="parent") {
+					if(!$method->isStatic() && !$possibleDynamic) {
 						$this->emitError($fileName,$call,"Signature mismatch", "Attempt to call non-static method: $name::".$call->name." statically");
 						return;
 					}
