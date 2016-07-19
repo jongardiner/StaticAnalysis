@@ -133,6 +133,8 @@ abstract class SymbolTable  {
 		return boolval($file);
 	}
 
+	abstract function removeFileFromIndex($name);
+
 	/**
 	 * Converts phar:// psuedo-paths to relative paths.
 	 * Converts relative paths to paths relative to $this->basePath

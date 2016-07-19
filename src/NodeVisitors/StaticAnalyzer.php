@@ -235,7 +235,7 @@ class StaticAnalyzer implements NodeVisitor {
 			array_pop($this->scopeStack);
 		}
 
-		if (self::isCastableIf($node) && $node instanceof Node\Stmt\If_ && $node->else==null && $node->elseifs==null) {
+		if ($node instanceof Node\Stmt\If_ && $node->else==null) {
 			// We only need to pop the scope if there wasn't an else clause.  Otherwise, it has already been popped.
 			array_pop($this->scopeStack);
 		}

@@ -53,6 +53,13 @@ class SqliteSymbolTable extends SymbolTable {
 		}
 	}
 
+	function removeFileFromIndex($name) {
+		$sql="DELETE FROM symbol_table WHERE file=?";
+		$statement=$this->con->prepare($sql);
+		$statement->execute($name);
+	}
+
+
 	function addClass($name, Class_ $class, $file) {
 		$this->addType($name, $file, self::TYPE_CLASS);
 	}

@@ -42,7 +42,7 @@ class TraitImportingVisitor implements NodeVisitor {
 		foreach($adaptations as $adaptation) {
 			if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 				// Alias adaptation renames the alias
-				if(!in_array($adaptation->method, $methods)) {
+				if(!array_key_exists($adaptation->method, $methods)) {
 					continue;
 				}
 

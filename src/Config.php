@@ -10,6 +10,12 @@ class Config {
 	/** @var string Directory containing the config file.  All files are relative to this directory */
 	private $basePath = "";
 
+	/**
+	 *
+	 * @var bool
+	 */
+	private $reindex = false;
+
 	/** @var array nested array with the settings for what files to import */
 	private $config = [];
 
@@ -134,6 +140,7 @@ class Config {
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
 					$this->preferredTable=self::SQLITE_SYMBOL_TABLE;
 					$this->fileList=[ $argv[++$i] ];
+					$this->reindex = true;
 					break;
 				case '-o':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
@@ -228,6 +235,10 @@ class Config {
 
 	private function getSymbolTableFile() {
 		return $this->basePath."/".$this->symbolTableFile;
+	}
+
+	function shouldReindex() {
+		return $this->reindex;
 	}
 
 	function processCount() {

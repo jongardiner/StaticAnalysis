@@ -48,6 +48,9 @@ class IndexingPhase
 					// If the $fileName is in our phar then make it a relative path so that files that we index don't
 					// depend on the phar file existing in a particular directory.
 					$fileData = file_get_contents($file->getPathname());
+					if($config->shouldReindex()) {
+						$symbolTable->removeFileFromIndex($file->getPathname());
+					}
 
 					$indexer->setFilename($name);
 					$stmts = $parser->parse($fileData);
