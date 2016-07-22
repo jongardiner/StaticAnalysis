@@ -17,8 +17,14 @@ class SwitchCheck extends BaseCheck
 
 	static function endWithBreak(array $stmts) {
 		$lastStatement = end($stmts);
+		$count=0;
+		foreach($stmts as $stmt) {
+			if(!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
+				$count++;
+			}
+		}
 		return
-			count($stmts)==0 ||
+			$count==0 ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
 			$lastStatement instanceof \PhpParser\Node\Expr\Exit_ ||
@@ -90,7 +96,7 @@ class SwitchCheck extends BaseCheck
 	}
 
 	/**
-	 * @param                                    $fileName
+	 * @param                              $fileName
 	 * @param \PhpParser\Node\Stmt\Switch_ $node
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
@@ -100,7 +106,7 @@ class SwitchCheck extends BaseCheck
 			   final case clause.  A missing break there has no effect.
 			*/
 
-			foreach($node->cases as $case) {
+			foreach($node->cases as $index=>$case) {
 				if($nextError) {
 					$comments = $case->getAttribute('comments');
 					if(is_array($comments)) {

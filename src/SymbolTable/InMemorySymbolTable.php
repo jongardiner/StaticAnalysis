@@ -54,5 +54,20 @@ class InMemorySymbolTable extends SymbolTable {
 		return $this->functions[strtolower($name)];
 	}
 
+	function removeFileFromIndex($name) {
+		self::removeFileFromOneIndex($this->traits, $name);
+		self::removeFileFromOneIndex($this->interfaces, $name);
+		self::removeFileFromOneIndex($this->functions, $name);
+		self::removeFileFromOneIndex($this->classes,$name);
+	}
+
+	private static function removeFileFromOneIndex(&$index, $name) {
+		foreach($index as $key=>$value) {
+			if($value==$name) {
+				unset($index[$key]);
+			}
+		}
+	}
+
 
 }
