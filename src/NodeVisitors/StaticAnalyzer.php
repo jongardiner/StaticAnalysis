@@ -43,6 +43,7 @@ class StaticAnalyzer implements NodeVisitor {
 			new Checks\ClassConstantCheck($this->index, $output, $emitErrors),
 			new Checks\FunctionCallCheck($this->index, $output, $emitErrors),
 			new Checks\MethodCall($this->index, $output, $emitErrors),
+			new Checks\SwitchCheck($this->index, $output, $emitErrors)
 		];
 
 
