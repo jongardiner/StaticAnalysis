@@ -12,13 +12,13 @@ use Webmozart\Glob\Glob;
 class Util {
 
 	static function finalPart( $parts ) {
-		return is_array($parts->parts) ? $parts->parts[ count($parts->parts)-1 ] : $parts;
+		return property_exists($parts,"parts") && is_array($parts->parts) ? $parts->parts[ count($parts->parts)-1 ] : $parts;
 	}
 
 	static function methodSignatureString(ClassMethod $method) {
 		$ret = [];
 		foreach($method->params as $param) {
-			$ret[]=static::finalPart($param->type) ?: "?";
+			$ret[]=$param->type ? static::finalPart($param->type) : '$'.$param->name;
 		}
 		return static::finalPart($method->name)."(".implode(",", $ret).")";
 	}

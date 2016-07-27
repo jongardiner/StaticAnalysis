@@ -46,26 +46,19 @@ class ClassMethodsCheck extends BaseCheck
 			$this->emitError($fileName,$method,$method->name."()", "Access level mismatch in ".$method->name."() ".Util::getMethodAccessLevel($method)." vs ".Util::getMethodAccessLevel($parentMethod));
 		}
 
-
-
-		return ;
 		// PHP 7, parameter counts and type hints must match.
 		$count1 = count($method->params);
 		$count2 = count($parentMethod->params);
 		if ($count1 != $count2) {
-/*			$this->emitError("Method",
-				$fileName . " " . $method->getLine() . ": parameter count mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod)
-			);*/
+			$this->emitError( $fileName, $method, "Method signature", "Parameter count mismatch " .$class->name."::". Util::methodSignatureString($method) . " vs " . $parentClass->name . "::" . Util::methodSignatureString($parentMethod ) );
 		} else foreach ($method->params as $index => $param) {
 			$parentParam = $parentMethod->params[$index];
 			$name1 = strval($param->type);
-			$name2 = strval($parentParam->Type);
+			$name2 = strval($parentParam->type);
 			if (
 				strcasecmp($name1, $name2) !== 0
 			) {
-				$this->emitError("Method",
-					$fileName . " " . $method->getLine() . ": parameter mismatch " . Util::methodSignatureString($method) . " vs " . Util::finalPart($parentClass->name) . "::" . Util::methodSignatureString($parentMethod)
-				);
+				$this->emitError( $fileName, $method, "Method signature", "Parameter mismatch " .$class->name."::".Util::methodSignatureString($method) . " vs " . $parentClass->name . "::" . Util::methodSignatureString($parentMethod) );
 				break;
 			}
 		}

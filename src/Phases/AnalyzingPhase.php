@@ -55,9 +55,9 @@ class AnalyzingPhase
 					$traverser3->traverse($stmts);
 				}
 			} catch (Error $e) {
-				$output->emitError( __CLASS__, $file, null, "Parse error", $e->getMessage() );
+				$output->emitError( __CLASS__, $file, 0, "Parse error", $e->getMessage() );
 			} catch(\Scan\Exceptions\UnknownTraitException $e) {
-				$output->emiError( __CLASS__, $file, null, "Unknown trait error", $e->getMessage() );
+				$output->emitError( __CLASS__, $file, 0, "Unknown trait error", $e->getMessage() );
 			}
 
 		}

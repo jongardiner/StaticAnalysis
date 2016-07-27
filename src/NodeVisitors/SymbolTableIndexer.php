@@ -35,7 +35,7 @@ class SymbolTableIndexer implements NodeVisitor {
 				$name=$node->namespacedName->toString();
 				$file=$this->index->getClassFile($name);
 				if($file) {
-					$this->output->emitError(__CLASS__, $this->filename,null, "\": Class $name already exists in $file.");
+					$this->output->emitError(__CLASS__, $this->filename,$node->getLine(), "\": Class $name already exists in $file.");
 				} else {
 					$this->index->addClass($name, $node, $this->filename);
 				}

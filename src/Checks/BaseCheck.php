@@ -21,8 +21,8 @@ abstract class BaseCheck {
 		$this->doc=$doc;
 	}
 
-	function emitError($file, $node, $class, $message="") {
-		return $this->doc->emitError(get_class($this), $file, $node, $class, $message);
+	function emitError($file, \PhpParser\Node $node, $class, $message="") {
+		return $this->doc->emitError(get_class($this), $file, $node->getLine(), $class, $message);
 	}
 
 	function incTests() {

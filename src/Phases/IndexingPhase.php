@@ -59,7 +59,7 @@ class IndexingPhase
 						$traverser2->traverse($stmts);
 					}
 				} catch (Error $e) {
-					$output->emitError(__CLASS__, $file, null,' Parse Error: ' . $e->getMessage() . "\n" );
+					$output->emitError(__CLASS__, $file, 0,' Parse Error: ' . $e->getMessage() . "\n" );
 				}
 			}
 		}

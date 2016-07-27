@@ -25,7 +25,7 @@ class XUnitOutput implements OutputInterface {
 		$this->doc=new JUnitXml\Document();
 		$this->doc->formatOutput=true;
 		$this->config=$config;
-		$this->emitErrors = $config->getOutputLevel()>1;
+		$this->emitErrors = $config->getOutputLevel()==1;
 	}
 
 	function getClass($className) {
@@ -42,7 +42,7 @@ class XUnitOutput implements OutputInterface {
 		//$this->suite->addTestCase();
 	}
 
-	function emitError($className, $fileName, Node $node=null, $name, $message="") {
+	function emitError($className, $fileName, $lineNumber, $name, $message="") {
 		$suite = $this->getClass($className);
 		if(!isset($this->files[$className][$fileName])) {
 			$case=$suite->addTestCase();
@@ -57,10 +57,8 @@ class XUnitOutput implements OutputInterface {
 		}
 
 
-		if($node) {
-			$lineNumber = $node->getLine();
-			$message.=" on line ".$lineNumber;
-		}
+
+		$message.=" on line ".$lineNumber;
 		$case->addFailure($message , $name);
 		if($this->emitErrors) {
 			echo "E";
@@ -94,13 +92,21 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function renderResults() {
-		echo "OUTPUT!";
 		if($this->config->getOutputFile()) {
-			echo "To file\n";
 			$this->doc->save($this->config->getOutputFile());
 		} else {
-			echo "Save xml\n";
 			echo $this->doc->saveXml();
 		}
+	}
+
+	function getErrorsByFile() {
+		$fileCount=[];
+		$failures = $this->doc->getElementsByTagName("failure");
+		for($i=0; $i<$failures->length; ++$i) {
+			$item = $failures->item($i);
+			$name = $item->parentNode->attributes->getNamedItem("name")->textContent;
+			$fileCount[ $name ]++;
+		}
+		return $fileCount;
 	}
 }

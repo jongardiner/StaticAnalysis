@@ -6,7 +6,7 @@ use PhpParser\Node;
 
 interface OutputInterface
 {
-	function emitError($className, $file, Node $node=null, $type, $message="");
+	function emitError($className, $file, $line, $type, $message="");
 	function output($verbose, $extraVerbose);
 	function outputVerbose($string);
 	function outputExtraVerbose($string);

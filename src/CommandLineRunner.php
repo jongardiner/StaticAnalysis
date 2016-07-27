@@ -72,6 +72,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 			}
 			$output->outputExtraVerbose("\nDone\n\n");
 			$output->renderResults();
+			//print_r($output->getErrorsByFile());
 			exit($exitCode);
 		}
 	}
