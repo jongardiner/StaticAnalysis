@@ -28,7 +28,12 @@ class ParamTypesCheck extends BaseCheck
 					$class = $this->symbolTable->getAbstractedClass($name1);
 					$this->incTests();
 					if (!$class && !$this->symbolTable->ignoreType($name1)) {
-						$this->emitError($fileName, $method, "Unknown type", "Reference to an unknown type $name1 in parameter $index of " . $method->name);
+						if(!property_exists($method,'name')) {
+							$displayName="closure function";
+						} else {
+							$displayName=$method->name;
+						}
+						$this->emitError($fileName, $method, "Unknown type", "Reference to an unknown type $name1 in parameter $index of $displayName");
 					}
 				}
 			}

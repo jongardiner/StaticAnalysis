@@ -26,7 +26,7 @@ class InstantiationCheck extends BaseCheck
 				$this->incTests();
 				$class = $this->symbolTable->getAbstractedClass($name);
 				if (!$class) {
-					$this->emitError($fileName,$node,"Unknown class", "Attempt to instantiate unknown class $name");
+					//$this->emitError($fileName,$node,"Unknown class", "Attempt to instantiate unknown class $name");
 					return;
 				}
 				if($class->isDeclaredAbstract()) {

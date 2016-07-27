@@ -61,7 +61,7 @@ class MethodCall extends BaseCheck
 					!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) &&
 					!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
 				) {
-					$this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
+					// $this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
 				}
 			}
 		}
@@ -93,7 +93,7 @@ class MethodCall extends BaseCheck
 				$expectedType = $params[$index]->getType();
 
 				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-					$this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter $variableName must be a $expectedType, passing $type");
+					$this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
 				}
 			}
 		}
