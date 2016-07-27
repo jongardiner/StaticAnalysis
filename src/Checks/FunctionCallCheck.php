@@ -70,6 +70,9 @@ class FunctionCallCheck extends BaseCheck
 		if(strcasecmp($name,"sprintf")==0) {
 			return 1;
 		}
+		if(strcasecmp($name,"array_merge")==0) {
+			return 1;
+		}
 		try {
 			$func=new \ReflectionFunction($name);
 			return $func->getNumberOfRequiredParameters();

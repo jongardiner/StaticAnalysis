@@ -93,7 +93,7 @@ class MethodCall extends BaseCheck
 				$expectedType = $params[$index]->getType();
 
 				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-					$this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+					// $this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
 				}
 			}
 		}
