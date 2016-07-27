@@ -6,19 +6,19 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
-use Scan\SymbolTable\SymbolTable;
 use Scan\NodeVisitors\SymbolTableIndexer;
 use Scan\Util;
 use Scan\Config;
+use Scan\Output\OutputInterface;
 
 
 class IndexingPhase
 {
 
-	function index(Config $config, \RecursiveIteratorIterator $it2, $stubs = false) {
+	function index(Config $config, OutputInterface $output, \RecursiveIteratorIterator $it2, $stubs = false) {
 		$baseDir = $config->getBasePath();
 		$symbolTable = $config->getSymbolTable();
-		$indexer = new SymbolTableIndexer($symbolTable);
+		$indexer = new SymbolTableIndexer($symbolTable, $output);
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new NameResolver());
 		$traverser2 = new NodeTraverser;
@@ -43,7 +43,7 @@ class IndexingPhase
 						continue;
 					}
 					++$count;
-					$config->output(".", " - $count:" . $name);
+					$output->output(".", " - $count:" . $name);
 
 					// If the $fileName is in our phar then make it a relative path so that files that we index don't
 					// depend on the phar file existing in a particular directory.
@@ -59,28 +59,28 @@ class IndexingPhase
 						$traverser2->traverse($stmts);
 					}
 				} catch (Error $e) {
-					$config->output('E', $name . ' : Parse Error: ' . $e->getMessage() . "\n");
+					$output->emitError(__CLASS__, $file, null,' Parse Error: ' . $e->getMessage() . "\n" );
 				}
 			}
 		}
 		return $count;
 	}
 
-	function run(Config $config) {
+	function run(Config $config, OutputInterface $output) {
 		$configArr = $config->getConfigArray();
 		$indexPaths = $configArr['index'];
 
 		foreach ($indexPaths as $directory) {
 			$tmpDirectory = strpos($directory, "/") === 0 ? $directory : $config->getBasePath() . "/" . $directory;
-			$config->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
+			$output->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
 			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
-			$this->index($config, $it2);
+			$this->index($config, $output, $it2);
 		}
 
 		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
 		$it2 = new \RecursiveIteratorIterator($it);
-		$this->index($config, $it2, true);
+		$this->index($config, $output, $it2, true);
 /*
 
 		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");

@@ -49,27 +49,30 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
+		$output = new Output\XUnitOutput($config);
+
 		if($config->shouldIndex()) {
-			$config->outputExtraVerbose("Indexing\n");
+			$output->outputExtraVerbose("Indexing\n");
 			$indexer=new IndexingPhase();
-			$indexer->run($config);
-			$config->outputExtraVerbose("\nDone\n\n");
+			$indexer->run($config, $output);
+			$output->outputExtraVerbose("\nDone\n\n");
+			//$output->renderResults();
 			exit(0);
 		}
 
 		if($config->shouldAnalyze()) {
 			$analyzer = new AnalyzingPhase();
-			$config->outputExtraVerbose("Analyzing\n");
+			$output->outputExtraVerbose("Analyzing\n");
 
 			if(!$config->hasFileList()) {
-				$exitCode = $analyzer->run($config);
+				$exitCode = $analyzer->run($config, $output);
 			} else {
 				$list = $config->getFileList();
-				$exitCode = $analyzer->phase2($config, $list);
+				$exitCode = $analyzer->phase2($config, $output, $list);
 			}
-			$config->outputExtraVerbose("\nDone\n\n");
+			$output->outputExtraVerbose("\nDone\n\n");
+			$output->renderResults();
 			exit($exitCode);
 		}
-
 	}
 }

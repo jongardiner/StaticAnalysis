@@ -193,26 +193,6 @@ class Config {
 		return $this->partitions;
 	}
 
-	function output($verbose, $extraVerbose) {
-		if($this->outputLevel==1) {
-			echo $verbose;flush();
-		} else if($this->outputLevel==2) {
-			echo $extraVerbose."\n";flush();
-		}
-	}
-
-	function outputVerbose($string) {
-		if($this->outputLevel>=1) {
-			echo $string;flush();
-		}
-	}
-
-	function outputExtraVerbose($string) {
-		if($this->outputLevel>=2) {
-			echo $string;flush();
-		}
-	}
-
 	function getPartitionNumber() {
 		return $this->partitionNumber;
 	}

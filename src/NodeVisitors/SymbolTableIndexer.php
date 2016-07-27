@@ -13,9 +13,12 @@ class SymbolTableIndexer implements NodeVisitor {
 	private $index;
 	private $classStack = [];
 	private $filename = "";
+	/** @var \Scan\Output\OutputInterface  */
+	private $output;
 
-	function __construct( $index ) {
+	function __construct( $index, \Scan\Output\OutputInterface $output) {
 		$this->index=$index;
+		$this->output=$output;
 	}
 	function beforeTraverse(array $nodes) {
 		return null;
@@ -32,7 +35,7 @@ class SymbolTableIndexer implements NodeVisitor {
 				$name=$node->namespacedName->toString();
 				$file=$this->index->getClassFile($name);
 				if($file) {
-					echo $this->filename." ".$node->getLine().": Class $name already exists in $file... Ignoring\n";
+					$this->output->emitError(__CLASS__, $this->filename,null, "\": Class $name already exists in $file.");
 				} else {
 					$this->index->addClass($name, $node, $this->filename);
 				}

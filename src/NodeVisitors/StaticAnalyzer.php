@@ -4,6 +4,7 @@ use PhpParser\Node;
 use PhpParser\NodeTraverserInterface;
 use PhpParser\NodeVisitor;
 use Scan\Checks;
+use Scan\Output\OutputInterface;
 use Scan\Scope;
 use Scan\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
@@ -17,33 +18,27 @@ class StaticAnalyzer implements NodeVisitor {
 	private $classStack = [];
 	private $scopeStack = [];
 
-	/** @var \N98\JUnitXml\Document */
-	private $suites;
-
-	function __construct($basePath, $index, \N98\JUnitXml\Document $output, $config) {
+	function __construct($basePath, $index, OutputInterface $output, $config) {
 		$this->index = $index;
-		$this->suites = $output;
 		$this->scopeStack = [new Scope(true)];
-
-		$emitErrors = $config->getOutputLevel() == 1;
 
 		/** @var Checks\BaseCheck[] $checkers */
 		$checkers = [
-			//	new Checks\DefinedConstantCheck($this->index, $output, $emitErrors),
-			new Checks\PropertyFetch($this->index, $output, $emitErrors),
-			//new Checks\BacktickOperatorCheck($this->index, $output, $emitErrors),
-			new Checks\AncestryCheck($this->index, $output, $emitErrors),
-			new Checks\ClassMethodsCheck($this->index, $output, $emitErrors),
-			new Checks\InterfaceCheck($this->index, $output, $emitErrors),
-			new Checks\ParamTypesCheck($this->index, $output, $emitErrors),
-			new Checks\StaticCallCheck($this->index, $output, $emitErrors),
-			new Checks\InstantiationCheck($this->index, $output, $emitErrors),
-			new Checks\InstanceOfCheck($this->index, $output, $emitErrors),
-			new Checks\CatchCheck($this->index, $output, $emitErrors),
-			new Checks\ClassConstantCheck($this->index, $output, $emitErrors),
-			new Checks\FunctionCallCheck($this->index, $output, $emitErrors),
-			new Checks\MethodCall($this->index, $output, $emitErrors),
-			new Checks\SwitchCheck($this->index, $output, $emitErrors)
+			//	new Checks\DefinedConstantCheck($this->index, $output),
+			new Checks\PropertyFetch($this->index, $output),
+			//new Checks\BacktickOperatorCheck($this->index, $output),
+			new Checks\AncestryCheck($this->index, $output),
+			new Checks\ClassMethodsCheck($this->index, $output),
+			new Checks\InterfaceCheck($this->index, $output),
+			new Checks\ParamTypesCheck($this->index, $output),
+			new Checks\StaticCallCheck($this->index, $output),
+			new Checks\InstantiationCheck($this->index, $output),
+			new Checks\InstanceOfCheck($this->index, $output),
+			new Checks\CatchCheck($this->index, $output),
+			new Checks\ClassConstantCheck($this->index, $output),
+			new Checks\FunctionCallCheck($this->index, $output),
+			new Checks\MethodCall($this->index, $output),
+			new Checks\SwitchCheck($this->index, $output)
 		];
 
 
@@ -251,18 +246,6 @@ class StaticAnalyzer implements NodeVisitor {
 		return null;
 	}
 
-	function saveResults(\Scan\Config $config) {
-		$this->suites->formatOutput=true;
 
-		if($config->getOutputFile()) {
-			$this->suites->save($config->getOutputFile());
-		} else {
-			echo $this->suites->saveXML();
-		}
-	}
 
-	function getErrorCount() {
-		$failures = $this->suites->getElementsByTagName("failure");
-		return $failures->length;
-	}
 }
