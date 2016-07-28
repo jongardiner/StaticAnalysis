@@ -52,8 +52,8 @@ class InterfaceCheck extends BaseCheck {
 					$this->emitErrorOnLine($fileName, $method->getStartingLine(), "Signature mismatch", "Child Method ".$class->name."::".$method->getName()." add or removes & in \$".$param->getName());
 					break;
 				}
-				if($param->isOptional() && !$parentParam->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), "Signature mismatch", "Child method ".$class->name."::".$method->getName()." changes parameter \$".$param->getName()." to be optional");
+				if(!$param->isOptional() && $parentParam->isOptional()) {
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), "Signature mismatch", "Child method ".$class->name."::".$method->getName()." changes parameter \$".$param->getName()." to be required.");
 					break;
 				}
 			} else {
