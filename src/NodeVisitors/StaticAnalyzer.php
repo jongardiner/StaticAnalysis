@@ -27,8 +27,6 @@ class StaticAnalyzer implements NodeVisitor {
 			// new Checks\DefinedConstantCheck($this->index, $output),
 			// new Checks\BacktickOperatorCheck($this->index, $output),
 			//new Checks\PropertyFetch($this->index, $output),
-			new Checks\AncestryCheck($this->index, $output),
-			new Checks\ClassMethodsCheck($this->index, $output),
 			new Checks\InterfaceCheck($this->index, $output),
 			new Checks\ParamTypesCheck($this->index, $output),
 			//new Checks\StaticCallCheck($this->index, $output),

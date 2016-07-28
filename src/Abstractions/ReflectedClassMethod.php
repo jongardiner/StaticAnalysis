@@ -35,18 +35,23 @@ class ReflectedClassMethod implements FunctionLikeInterface {
 		return $this->refl->getNumberOfRequiredParameters();
 	}
 
+
 	function getParameters() {
 		$ret = [];
 		$params = $this->refl->getParameters();
 		/** @var ReflectionParameter $param */
 		foreach($params as $param) {
 			$type = $param->getClass() ? $param->getClass()->name : '';
-			$ret[] = new FunctionLikeParameter( $type , $param->name, $param->isOptional() );
+			$ret[] = new FunctionLikeParameter( $type , $param->name, $param->isOptional(), $param->isPassedByReference());
 		}
 		return $ret;
 	}
 
 	function getName() {
 		return $this->refl->getName();
+	}
+
+	function getStartingLine() {
+		return 0;
 	}
 }

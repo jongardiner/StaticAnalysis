@@ -27,7 +27,7 @@ class TestSwitchCheck extends \PHPUnit_Framework_TestCase {
 		?>';
 
 		$output = new \N98\JUnitXml\Document;
-		$emptyTable = new \Scan\SymbolTable\InMemorySymbolTable("");
+		$emptyTable = new \Scan\SymbolTable\InMemorySymbolTable(__DIR__);
 
 		$stmts = self::parseText($code);
 		$check = new \Scan\Checks\SwitchCheck($emptyTable, $output);

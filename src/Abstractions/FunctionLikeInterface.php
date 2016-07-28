@@ -10,4 +10,5 @@ interface FunctionLikeInterface {
 	function getName();
 	function getAccessLevel();
 	function isAbstract();
+	function getStartingLine();
 }

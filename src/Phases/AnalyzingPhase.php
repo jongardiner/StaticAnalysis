@@ -43,7 +43,7 @@ class AnalyzingPhase
 		foreach ($toProcess as $file) {
 			try {
 				$name = Util::removeInitialPath($config->getBasePath(), $file);
-				$output->output(".", $name);
+			 	$output->output(".", $name);
 				$processingCount++;
 				//echo " - $processingCount:" . $file . "\n";
 				$fileData = file_get_contents($file);

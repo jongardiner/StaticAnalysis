@@ -22,11 +22,14 @@ class ClassMethod implements FunctionLikeInterface {
 		return $minimumArgs;
 	}
 
+	/**
+	 * @return FunctionLikeParameter
+	 */
 	function getParameters() {
 		$ret = [];
-		/** @var PhpParser\Node\Param $param */
+		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
-			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default!=null);
+			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default!=null, $param->byRef);
 		}
 		return $ret;
 	}
@@ -49,5 +52,9 @@ class ClassMethod implements FunctionLikeInterface {
 
 	function getName() {
 		return $this->method->name;
+	}
+
+	function getStartingLine() {
+		return $this->method->getLine();
 	}
 }

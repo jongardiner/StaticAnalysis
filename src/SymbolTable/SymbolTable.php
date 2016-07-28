@@ -78,9 +78,7 @@ abstract class SymbolTable  {
 		} else if(strpos($name,"\\")===false) {
 			try {
 				$refl = new \ReflectionClass($name);
-				if ($refl->isInternal()) {
-					$ob = new \Scan\Abstractions\ReflectedClass($refl);
-				}
+				$ob = new \Scan\Abstractions\ReflectedClass($refl);
 			} catch (\ReflectionException $e) {
 				$ob=null;
 			}
@@ -100,9 +98,7 @@ abstract class SymbolTable  {
 		} else if(strpos($className,"\\")===false) {
 			try {
 				$refl = new \ReflectionMethod($className, $methodName);
-				if ($refl->isInternal()) {
-					$ob = new \Scan\Abstractions\ReflectedClassMethod($refl);
-				}
+				$ob = new \Scan\Abstractions\ReflectedClassMethod($refl);
 			} catch (\ReflectionException $e) {
 				$ob=null;
 			}

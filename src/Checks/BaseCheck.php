@@ -22,7 +22,11 @@ abstract class BaseCheck {
 	}
 
 	function emitError($file, \PhpParser\Node $node, $class, $message="") {
-		return $this->doc->emitError(get_class($this), $file, $node->getLine(), $class, $message);
+		return $this->emitErrorOnLine($file, $node->getLine(), $class, $message);
+	}
+
+	function emitErrorOnLine($file, $lineNumber, $class, $message="") {
+		return $this->doc->emitError(get_class($this), $file, $lineNumber, $class, $message);
 	}
 
 	function incTests() {

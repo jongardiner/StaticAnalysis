@@ -73,6 +73,9 @@ class FunctionCallCheck extends BaseCheck
 		if(strcasecmp($name,"array_merge")==0) {
 			return 1;
 		}
+		if(strcasecmp($name,"stream_set_timeout")==0) {
+			return 2;
+		}
 		try {
 			$func=new \ReflectionFunction($name);
 			return $func->getNumberOfRequiredParameters();
