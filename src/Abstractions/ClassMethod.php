@@ -1,6 +1,8 @@
 <?php
 namespace Scan\Abstractions;
 
+use PhpParser\Node\Stmt\Function_;
+use Scan\NodeVisitors\VariadicCheckVisitor;
 use Scan\Util;
 
 class ClassMethod implements FunctionLikeInterface {
@@ -56,5 +58,17 @@ class ClassMethod implements FunctionLikeInterface {
 
 	function getStartingLine() {
 		return $this->method->getLine();
+	}
+
+	function isVariadic() {
+		foreach($this->method->getParams() as $param) {
+			if($param->variadic) {
+				return true;
+			}
+		}
+		if($this->method instanceof Function_ || $this->method instanceof \PhpParser\Node\Stmt\ClassMethod) {
+			return VariadicCheckVisitor::isVariadic($this->method->getStmts());
+		}
+		return false;
 	}
 }

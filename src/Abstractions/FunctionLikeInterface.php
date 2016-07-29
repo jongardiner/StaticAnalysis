@@ -11,4 +11,5 @@ interface FunctionLikeInterface {
 	function getAccessLevel();
 	function isAbstract();
 	function getStartingLine();
+	function isVariadic();
 }

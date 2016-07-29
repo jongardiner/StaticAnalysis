@@ -21,6 +21,7 @@ abstract class BaseCheck {
 	const TYPE_INCORRECT_DYNAMIC_CALL="Standard.Incorrect.Dynamic";
 	const TYPE_SCOPE_ERROR="Standard.Scope";
 	const TYPE_SIGNATURE_COUNT="Standard.Signature.Count";
+	const TYPE_SIGNATURE_COUNT_EXCESS="Standard.Signature.Count.Excess";
 	const TYPE_SIGNATURE_TYPE="Standard.Signature.Type";
 	const TYPE_UNIMPLEMENTED_METHOD="Standard.Unimplemented.Method";
 	const TYPE_MISSING_BREAK="Standard.Missing.Break";

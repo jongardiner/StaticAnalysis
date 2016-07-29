@@ -54,4 +54,12 @@ class ReflectedClassMethod implements FunctionLikeInterface {
 	function getStartingLine() {
 		return 0;
 	}
+
+	function isVariadic() {
+		if(method_exists($this->refl,"isVariadic")) {
+			return $this->refl->isVariadic();
+		} else {
+			return true; // We assume internal functions are variadic so that we don't get bombarded with warnings.
+		}
+	}
 }

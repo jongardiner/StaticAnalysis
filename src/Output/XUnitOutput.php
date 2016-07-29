@@ -69,7 +69,7 @@ class XUnitOutput implements OutputInterface {
 		if($this->emitErrors) {
 			echo "E";
 		}
-		//echo "ERROR: $fileName $lineNumber: $message\n";
+		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
 
 	function output($verbose, $extraVerbose) {

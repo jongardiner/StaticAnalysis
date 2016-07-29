@@ -84,6 +84,9 @@ class MethodCall extends BaseCheck
 		if (count($node->args) < $minimumArgs) {
 			$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to method " . $method->getName() . " (passed " . count($node->args) . " requires $minimumArgs)");
 		}
+		if(count($node->args) > count($params) && !$method->isVariadic()) {
+			$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT_EXCESS, "Too many parameters to non-variadic method ".$method->getName()." (passed ".count($node->args). " only takes ".count($params).")");
+		}
 
 		foreach ($node->args as $index => $arg) {
 
