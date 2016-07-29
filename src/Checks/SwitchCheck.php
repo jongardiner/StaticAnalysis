@@ -118,7 +118,7 @@ class SwitchCheck extends BaseCheck
 						}
 					}
 					if($nextError) {
-						$this->emitError($fileName, $nextError, "Control flow", "Switch case does not end with break statement");
+						$this->emitError($fileName, $nextError, self::TYPE_MISSING_BREAK, "Switch case does not end with break statement");
 						$nextError = null;
 					}
 				}

@@ -18,6 +18,6 @@ class BacktickOperatorCheck extends BaseCheck
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		$this->incTests();
-		$this->emitError($fileName,$node,"Security", "Unsafe operator (backtick)");
+		$this->emitError($fileName,$node,self::TYPE_SECURITY_BACKTICK, "Unsafe operator (backtick)");
 	}
 }

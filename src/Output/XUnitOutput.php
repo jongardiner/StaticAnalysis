@@ -21,11 +21,14 @@ class XUnitOutput implements OutputInterface {
 
 	private $emitErrors;
 
+	private $emitList = [];
+
 	function __construct(\Scan\Config $config) {
 		$this->doc=new JUnitXml\Document();
 		$this->doc->formatOutput=true;
 		$this->config=$config;
 		$this->emitErrors = $config->getOutputLevel()==1;
+		$this->emitList = $config->getEmitList();
 	}
 
 	function getClass($className) {
@@ -43,6 +46,9 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function emitError($className, $fileName, $lineNumber, $name, $message="") {
+		if(!in_array($name, $this->emitList) && count($this->emitList)>0) {
+			return;
+		}
 		$suite = $this->getClass($className);
 		if(!isset($this->files[$className][$fileName])) {
 			$case=$suite->addTestCase();

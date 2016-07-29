@@ -41,7 +41,7 @@ class MethodCall extends BaseCheck
 			}
 			if ($node->var->name == "this") {
 				if (!$inside) {
-					$this->emitError($fileName, $node, "Scope error", "Can't use \$this outside of a class");
+					$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
 					return;
 				} else {
 					$className = strval($inside->namespacedName);
@@ -76,13 +76,13 @@ class MethodCall extends BaseCheck
 	 */
 	protected function checkMethod($fileName, $node, $inside, Scope $scope, FunctionLikeInterface $method) {
 		if ($method->isStatic()) {
-			//$this->emitError($fileName, $node, "Unknown method", "Call to static method of $inside::" . $method->getName(). " non-statically");
+			$this->emitError($fileName, $node, self::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $inside::" . $method->getName(). " non-statically");
 			return;
 		}
 		$params = $method->getParameters();
 		$minimumArgs=$method->getMinimumRequiredParameters();
 		if (count($node->args) < $minimumArgs) {
-			$this->emitError($fileName, $node, "Signature mismatch", "Function call parameter count mismatch to method " . $method->getName() . " (passed " . count($node->args) . " requires $minimumArgs)");
+			$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to method " . $method->getName() . " (passed " . count($node->args) . " requires $minimumArgs)");
 		}
 
 		foreach ($node->args as $index => $arg) {
@@ -93,7 +93,7 @@ class MethodCall extends BaseCheck
 				$expectedType = $params[$index]->getType();
 
 				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-					// $this->emitError($fileName, $node, "Signature mismatch", "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+					$this->emitError($fileName, $node, self::TYPE_SIGNATURE_TYPE, "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
 				}
 			}
 		}

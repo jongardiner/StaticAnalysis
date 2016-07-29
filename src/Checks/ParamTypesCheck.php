@@ -33,7 +33,7 @@ class ParamTypesCheck extends BaseCheck
 						} else {
 							$displayName=$method->name;
 						}
-						$this->emitError($fileName, $method, "Unknown type", "Reference to an unknown type $name1 in parameter $index of $displayName");
+						$this->emitError($fileName, $method, self::TYPE_UNKNOWN_CLASS, "Reference to an unknown type $name1 in parameter $index of $displayName");
 					}
 				}
 			}

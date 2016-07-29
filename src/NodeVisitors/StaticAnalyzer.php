@@ -24,19 +24,19 @@ class StaticAnalyzer implements NodeVisitor {
 
 		/** @var Checks\BaseCheck[] $checkers */
 		$checkers = [
-			// new Checks\DefinedConstantCheck($this->index, $output),
-			// new Checks\BacktickOperatorCheck($this->index, $output),
-			//new Checks\PropertyFetch($this->index, $output),
+			new Checks\DefinedConstantCheck($this->index, $output),
+			new Checks\BacktickOperatorCheck($this->index, $output),
+			new Checks\PropertyFetch($this->index, $output),
 			new Checks\InterfaceCheck($this->index, $output),
 			new Checks\ParamTypesCheck($this->index, $output),
-			//new Checks\StaticCallCheck($this->index, $output),
+			new Checks\StaticCallCheck($this->index, $output),
 			new Checks\InstantiationCheck($this->index, $output),
 			new Checks\InstanceOfCheck($this->index, $output),
 			new Checks\CatchCheck($this->index, $output),
 			new Checks\ClassConstantCheck($this->index, $output),
 			new Checks\FunctionCallCheck($this->index, $output),
-			new Checks\MethodCall($this->index, $output)
-			// new Checks\SwitchCheck($this->index, $output)
+			new Checks\MethodCall($this->index, $output),
+			new Checks\SwitchCheck($this->index, $output)
 		];
 
 
@@ -68,7 +68,7 @@ class StaticAnalyzer implements NodeVisitor {
 		if ($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
-		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Expr\Closure) {
+		if($node instanceof Node\FunctionLike) { // Typecast
 			$this->pushFunctionScope($node);
 		}
 		if ($node instanceof Node\Expr\Assign) {
@@ -229,7 +229,7 @@ class StaticAnalyzer implements NodeVisitor {
 		if ($node instanceof Class_) {
 			array_pop($this->classStack);
 		}
-		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Expr\Closure) {
+		if ($node instanceof Node\FunctionLike) {
 			array_pop($this->scopeStack);
 		}
 

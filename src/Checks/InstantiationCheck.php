@@ -26,11 +26,11 @@ class InstantiationCheck extends BaseCheck
 				$this->incTests();
 				$class = $this->symbolTable->getAbstractedClass($name);
 				if (!$class) {
-					//$this->emitError($fileName,$node,"Unknown class", "Attempt to instantiate unknown class $name");
+					$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
 					return;
 				}
 				if($class->isDeclaredAbstract()) {
-					$this->emitError($fileName, $node,"Signature mismatch","Attempt to instantiate abstract class $name");
+					$this->emitError($fileName, $node,self::TYPE_SIGNATURE_TYPE,"Attempt to instantiate abstract class $name");
 					return;
 				}
 
@@ -41,7 +41,7 @@ class InstantiationCheck extends BaseCheck
 					$minParams=$maxParams=0;
 				} else {
 					if($method->getAccessLevel()=="private" && (!$inside || strcasecmp($inside->namespacedName,$name)!=0)) {
-						$this->emitError($fileName,$node,"Signature mismatch", "Attempt to call private constructor outside of class $name");
+						$this->emitError($fileName,$node,self::TYPE_SCOPE_ERROR, "Attempt to call private constructor outside of class $name");
 						return;
 					}
 					$maxParams = count($method->getParameters());
@@ -54,7 +54,7 @@ class InstantiationCheck extends BaseCheck
 
 				$passedArgCount=count($node->args);
 				if($passedArgCount<$minParams) {
-					$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing $passedArgCount count, required count=$minParams");
+					$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT,"Call to $name::__construct passing $passedArgCount count, required count=$minParams");
 				}
 				if($passedArgCount>$maxParams) {
 					//$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing too many parameters ($passedArgCount instead of $maxParams)");

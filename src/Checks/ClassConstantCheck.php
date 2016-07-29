@@ -55,20 +55,20 @@ class ClassConstantCheck extends BaseCheck {
 				case 'self':
 				case 'static':
 					if(!$inside) {
-						$this->emitError($fileName, $node, "Scope error", "Can't access using self:: outside of a class");
+						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
 						return;
 					}
 					$name = $inside->namespacedName;
 					break;
 				case 'parent':
 					if(!$inside) {
-						$this->emitError($fileName, $node, "Scope error", "Can't access using parent:: outside of a class");
+						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
 						return;
 					}
 					if ($inside->extends) {
 						$name = strval($inside->extends);
 					} else {
-						$this->emitError($fileName, $node, "Scope error", "Can't access using parent:: in a class with no parent");
+						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
 						return;
 					}
 					break;
@@ -77,12 +77,12 @@ class ClassConstantCheck extends BaseCheck {
 			$this->incTests();
 			$class = $this->symbolTable->getAbstractedClass($name);
 			if (!$class) {
-				$this->emitError($fileName,$node,"Unknown class/interface", "That's not a thing.  Can't find class/interface $name");
+				$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
 				return;
 			}
 
 			if(strcasecmp($constantName,"class")!=0 && !$this->findConstant($class, $constantName)) {
-				$this->emitError($fileName, $node, "Unknown constant", "Reference to unknown constant $name::$constantName");
+				$this->emitError($fileName, $node, self::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
 			}
 		}
 	}

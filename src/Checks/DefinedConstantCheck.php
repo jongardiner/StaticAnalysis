@@ -59,8 +59,8 @@ class DefinedConstantCheck extends BaseCheck {
 		"__COMPILER_HALT_OFFSET__"
 	];
 
-	function __construct(SymbolTable $symbolTable, JUnitXml\Document $doc, $emitErrors) {
-		parent::__construct($symbolTable, $doc, $emitErrors);
+	function __construct(SymbolTable $symbolTable, \Scan\Output\OutputInterface $output) {
+		parent::__construct($symbolTable, $output);
 
 		foreach(get_loaded_extensions() as $extension) {
 			try {
@@ -99,7 +99,7 @@ class DefinedConstantCheck extends BaseCheck {
 		// Note: defined() will check the global defines available in the current process, which could differ from the run-time environment the
 		// code is executed under.  Unfortunately, there isn't a good way to enumerate extension constants.
 		if (!$this->symbolTable->isDefined($name) && !$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name)) {
-			$this->emitError($fileName, $node, "Unknown define", "That's not a thing.  Can't find define named \"$name\"");
+			$this->emitError($fileName, $node, self::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");
 			return;
 		}
 	}

@@ -29,10 +29,10 @@ class FunctionCallCheck extends BaseCheck
 
 			$minimumArgs = $this->getMinimumParams($name);
 			if($minimumArgs<0) {
-				$this->emitError($fileName,$node,"Unknown function", "Call to unknown function $name");
+				$this->emitError($fileName,$node,self::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 			}
 			if(count($node->args)<$minimumArgs) {
-				$this->emitError($fileName,$node,"Signature mismatch", "Function call parameter count mismatch to function $name (passed ".count($node->args)." requires $minimumArgs)");
+				$this->emitError($fileName,$node,self::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed ".count($node->args)." requires $minimumArgs)");
 			}
 		}
 	}

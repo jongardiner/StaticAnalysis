@@ -6,6 +6,8 @@ function collator_create() { }
 function collator_set_attribute() { }
 function collator_compare() { }
 
+class OAuthException extends Exception { }
+
 function newrelic_disable_autorum() { }
 function newrelic_end_transaction() { }
 function newrelic_end_of_transaction() { }

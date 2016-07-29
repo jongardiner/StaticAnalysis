@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
+use Scan\Checks\BaseCheck;
 
 class SymbolTableIndexer implements NodeVisitor {
 	private $index;
@@ -32,14 +33,16 @@ class SymbolTableIndexer implements NodeVisitor {
 	function enterNode(Node $node) {
 		switch(get_class($node)) {
 			case Class_::class:
-				$name=$node->namespacedName->toString();
-				$file=$this->index->getClassFile($name);
-				if($file) {
-					$this->output->emitError(__CLASS__, $this->filename,$node->getLine(), "\": Class $name already exists in $file.");
-				} else {
-					$this->index->addClass($name, $node, $this->filename);
+				$name=$node->namespacedName ? $node->namespacedName->toString() : "anonymous class";
+				if($name) {
+					$file = $this->index->getClassFile($name);
+					if ($file) {
+						$this->output->emitError(__CLASS__, $this->filename, $node->getLine(), BaseCheck::TYPE_PARSE_ERROR, "Class $name already exists in $file.");
+					} else {
+						$this->index->addClass($name, $node, $this->filename);
+					}
+					array_push($this->classStack, $node);
 				}
-				array_push($this->classStack, $node);
 				break;
 			case Interface_::class:
 				$name=$node->namespacedName->toString();
@@ -72,7 +75,7 @@ class SymbolTableIndexer implements NodeVisitor {
 				array_push($this->classStack, $node);
 				break;
 		}
-		if($node instanceof ClassMethod && count($this->classStack)>0) {
+		if($node instanceof ClassMethod && property_exists($node,'namespacedName') && count($this->classStack)>0) {
 			$classNode=$this->classStack[count($this->classStack)-1];
 			$className=$classNode->namespacedName->toString();
 			$this->index->addMethod($className, $node->name, $node);
@@ -81,7 +84,7 @@ class SymbolTableIndexer implements NodeVisitor {
 	}
 
 	function leaveNode(Node $node) {
-		if($node instanceof Class_ || $node instanceof Interface_ || $node instanceof Trait_) {
+		if( ($node instanceof Class_ && $node->namespacedName) || $node instanceof Interface_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
 		}
 		return null;

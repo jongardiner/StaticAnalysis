@@ -50,6 +50,9 @@ class Config {
 	/** @var string */
 	private $configFileName = "";
 
+	/** @var string[] */
+	private $emitList = [];
+
 	/** @var int  */
 	private $outputLevel = 0;
 
@@ -69,6 +72,9 @@ class Config {
 
 		$this->basePath=dirname(realpath($this->configFileName))."/";
 		$this->config=json_decode(file_get_contents($this->configFileName),true);
+		if(isset($this->config['emit']) && is_array($this->config['emit'])) {
+			$this->emitList = $this->config['emit'];
+		}
 
 		if($this->processes>1) {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
@@ -219,6 +225,10 @@ class Config {
 
 	function shouldReindex() {
 		return $this->reindex;
+	}
+
+	function getEmitList() {
+		return $this->emitList;
 	}
 
 	function processCount() {

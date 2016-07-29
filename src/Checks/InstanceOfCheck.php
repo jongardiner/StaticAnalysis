@@ -19,7 +19,7 @@ class InstanceOfCheck extends BaseCheck
 				$this->incTests();
 				$class=$this->symbolTable->getAbstractedClass($name);
 				if(!$class) {
-					$this->emitError($fileName,$node,"Unknown class", "Instance of references unknown class $name");
+					$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Instance of references unknown class $name");
 				}
 			}
 		}

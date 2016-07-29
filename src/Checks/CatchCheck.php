@@ -8,7 +8,7 @@ use Scan\Util;
 class CatchCheck extends BaseCheck
 {
 	function getCheckNodeTypes() {
-		return [Node\Stmt\Catch_::class];
+		return [\PhpParser\Node\Stmt\Catch_::class];
 	}
 
 	/**
@@ -23,7 +23,7 @@ class CatchCheck extends BaseCheck
 		}
 		$this->incTests();
 		if (!$this->symbolTable->getAbstractedClass($name)) {
-			$this->emitError($fileName,$node,"Unknown class/interface", "Attempt to catch unknown type: $name");
+			$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 		}
 	}
 }

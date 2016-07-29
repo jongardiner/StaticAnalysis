@@ -28,7 +28,7 @@ class PropertyFetch extends BaseCheck
 					return;
 				}
 				if(!$inside) {
-					$this->emitError($fileName, $node, "Scope error", "Can't use \$this outside of a class");
+					$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
 					return;
 				}
 				if(!is_string($node->name)) {
