@@ -24,6 +24,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 		/** @var Checks\BaseCheck[] $checkers */
 		$checkers = [
+			new Checks\ImpossibleInjectionCheck($this->index, $output),
 			new Checks\DefinedConstantCheck($this->index, $output),
 			new Checks\BacktickOperatorCheck($this->index, $output),
 			new Checks\PropertyFetch($this->index, $output),

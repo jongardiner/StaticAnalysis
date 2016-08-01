@@ -31,6 +31,10 @@ class Class_ implements ClassInterface {
 		return $this->class instanceof \PhpParser\Node\Stmt\Class_ ? strval($this->class->extends) : "";
 	}
 
+	function isInterface() {
+		return $this->class instanceof \PhpParser\Node\Stmt\Interface_;
+	}
+
 	function getInterfaceNames() {
 		$ret = [];
 		if($this->class instanceof Interface_) {

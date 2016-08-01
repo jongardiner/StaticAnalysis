@@ -10,4 +10,5 @@ interface ClassInterface {
 	function getInterfaceNames();
 	function getMethod($name);
 	function hasConstant($name);
+	function isInterface();
 }
