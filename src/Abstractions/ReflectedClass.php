@@ -20,6 +20,10 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->getInterfaceNames();
 	}
 
+	function isInterface() {
+		return $this->refl->isInterface();
+	}
+
 	function isDeclaredAbstract() {
 		return $this->refl->isAbstract();
 	}

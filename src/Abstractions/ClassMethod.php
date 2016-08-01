@@ -23,7 +23,7 @@ class ClassMethod implements FunctionLikeInterface {
 	}
 
 	/**
-	 * @return FunctionLikeParameter
+	 * @return FunctionLikeParameter[]
 	 */
 	function getParameters() {
 		$ret = [];
