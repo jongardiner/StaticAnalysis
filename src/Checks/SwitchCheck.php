@@ -15,13 +15,18 @@ class SwitchCheck extends BaseCheck
 		return [ \PhpParser\Node\Stmt\Switch_::class ];
 	}
 
-	static function endWithBreak(array $stmts) {
+	static function getLastStatement(array $stmts) {
 		$lastStatement = null;
 		foreach($stmts as $stmt) {
 			if(!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
 				$lastStatement = $stmt;
 			}
 		}
+		return $lastStatement;
+	}
+
+	static function endWithBreak(array $stmts) {
+		$lastStatement = self::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
@@ -31,6 +36,12 @@ class SwitchCheck extends BaseCheck
 				$lastStatement instanceof \PhpParser\Node\Expr\FuncCall &&
 				$lastStatement->name instanceof \PhpParser\Node\Name &&
 				$lastStatement->name=="die"
+			) || (
+				(
+					$lastStatement instanceof \PhpParser\Node\Stmt\Switch_ ||
+					$lastStatement instanceof \PhpParser\Node\Stmt\If_
+				) &&
+				self::allBranchesExit([$lastStatement])
 			);
 	}
 
@@ -80,7 +91,7 @@ class SwitchCheck extends BaseCheck
 	 * @param $allowBreak
 	 */
 	function allBranchesExit(array $stmts) {
-		$lastStatement=end($stmts);
+		$lastStatement = self::getLastStatement($stmts);
 		if(!$lastStatement) {
 			return false;
 		} else if($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
