@@ -4,6 +4,7 @@ use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use Scan\Scope;
@@ -73,12 +74,11 @@ class SwitchCheck extends BaseCheck
 				$hasDefault = true;
 			}
 			$stmts = $case->stmts;
-
 			// Remove the trailing break (if found) and just look for a return the statement prior
-			if(end($stmts) instanceof Break_) {
+			while( ($last=end($stmts)) instanceof Break_ || $last instanceof Nop) {
 				$stmts=array_slice($stmts, 0, -1);
 			}
-			if($case->stmts && !self::allBranchesExit($stmts)) {
+			if($stmts && !self::allBranchesExit($stmts)) {
 				return false;
 			}
 		}
@@ -92,6 +92,7 @@ class SwitchCheck extends BaseCheck
 	 */
 	function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
+
 		if(!$lastStatement) {
 			return false;
 		} else if($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
@@ -110,7 +111,8 @@ class SwitchCheck extends BaseCheck
 	 * @param \PhpParser\Node\Stmt\Switch_ $node
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
-		if(is_array($node->cases)) {
+
+		if(!self::allBranchesExit([$node]) && is_array($node->cases)) {
 			$nextError=null;
 			/* Note: this algorithm (intentionally) doesn't output an error in the
 			   final case clause.  A missing break there has no effect.
