@@ -13,17 +13,25 @@ use PhpParser\Node\Stmt\Trait_;
 class StaticAnalyzer implements NodeVisitor {
 	/** @var  SymbolTable */
 	private $index;
+
+	/** @var string */
 	private $file;
+
+	/** @var Checks\BaseCheck[] */
 	private $checks = [];
+
+	/** @var Class_[] */
 	private $classStack = [];
+	/** @var Scope[] */
 	private $scopeStack = [];
 
 	function __construct($basePath, $index, OutputInterface $output, $config) {
 		$this->index = $index;
-		$this->scopeStack = [new Scope(true)];
+		$this->scopeStack = [new Scope(true, true)];
 
 		/** @var Checks\BaseCheck[] $checkers */
 		$checkers = [
+			new Checks\UndefinedVariableCheck($this->index, $output),
 			new Checks\ImpossibleInjectionCheck($this->index, $output),
 			new Checks\DefinedConstantCheck($this->index, $output),
 			new Checks\BacktickOperatorCheck($this->index, $output),
@@ -58,7 +66,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 	function setFile($name) {
 		$this->file = $name;
-		$this->scopeStack = [new Scope(true)];
+		$this->scopeStack = [new Scope(true, true)];
 	}
 
 	function enterNode(Node $node) {
@@ -75,8 +83,27 @@ class StaticAnalyzer implements NodeVisitor {
 		if ($node instanceof Node\Expr\Assign) {
 			$this->handleAssignment($node);
 		}
+		if ($node instanceof Node\Stmt\StaticVar) {
+			$this->setScopeExpression($node->name, $node->default);
+		}
 		if ($node instanceof Node\Stmt\Catch_) {
 			$this->setScopeType(strval($node->var), strval($node->type));
+		}
+		if($node instanceof Node\Stmt\Global_) {
+			foreach($node->vars as $var) {
+				if($var instanceof Node\Expr\Variable && $var->name instanceof Node\Name) {
+					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
+				}
+			}
+
+		}
+		if($node instanceof Node\Stmt\Foreach_) {
+			if($node->keyVar instanceof Node\Expr\Variable && gettype($node->keyVar->name)=="string") {
+				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE);
+			}
+			if($node->valueVar instanceof Node\Expr\Variable && gettype($node->valueVar->name)=="string") {
+				$this->setScopeType(strval($node->valueVar->name), Scope::MIXED_TYPE);
+			}
 		}
 		if($node instanceof Node\Stmt\If_ || $node instanceof Node\Stmt\ElseIf_) {
 			if($node instanceof Node\Stmt\ElseIf_) {
@@ -144,6 +171,16 @@ class StaticAnalyzer implements NodeVisitor {
 		foreach ($func->getParams() as $param) {
 			$scope->setVarType(strval($param->name), strval($param->type));
 		}
+		if($func instanceof Node\Expr\Closure) {
+			$oldScope=end($this->scopeStack);
+			foreach($func->uses as $variable) {
+				$type = $oldScope->getVarType($variable->var);
+				if($type==Scope::UNDEFINED) {
+					$type=Scope::MIXED_TYPE;
+				}
+				$scope->setVarType($variable->var, $type);
+			}
+		}
 		array_push($this->scopeStack, $scope);
 	}
 
@@ -163,7 +200,7 @@ class StaticAnalyzer implements NodeVisitor {
 	 * @param Scope     $scope
 	 * @return string
 	 */
-	static function inferType(Node\Stmt\ClassLike $inside = null, Node\Expr $expr, Scope $scope) {
+	static function inferType(Node\Stmt\ClassLike $inside = null, Node\Expr $expr=null, Scope $scope) {
 		if ($expr instanceof Node\Scalar || $expr instanceof Node\Expr\AssignOp) {
 			return Scope::SCALAR_TYPE;
 		} else if ($expr instanceof Node\Expr\New_ && $expr->class instanceof Node\Name) {
@@ -220,7 +257,8 @@ class StaticAnalyzer implements NodeVisitor {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->vars as $var) {
 				if ($var && $var instanceof Node\Expr\Variable && $var->name instanceof Node\Name) {
-					$this->setScopeType($var->name, Scope::MIXED_TYPE);
+					echo "Adding list var: ".$var->name."\n";
+					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
 				}
 			}
 		}

@@ -24,7 +24,7 @@ class FunctionCallCheck extends BaseCheck
 			$toLower = strtolower($name);
 			$this->incTests();
 			if(array_key_exists($toLower, self::$dangerous)) {
-				// $this->emitError($fileName, $node, "Security", "Call to dangerous function $name()");
+				$this->emitError($fileName, $node, self::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
 			}
 
 			$minimumArgs = $this->getMinimumParams($name);

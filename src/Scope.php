@@ -17,14 +17,23 @@ class Scope
 
 	private $vars = [];
 
+	/** @var  bool */
 	private $isStatic;
 
-	function __construct($isStatic) {
+	/** @var  bool */
+	private $isGlobal;
+
+	function __construct($isStatic, $isGlobal=false) {
 		$this->isStatic=$isStatic;
+		$this->isGlobal=$isGlobal;
 	}
 
 	function isStatic() {
 		return $this->isStatic;
+	}
+
+	function isGlobal() {
+		return $this->isGlobal;
 	}
 
 	function setVarType($name, $type) {
