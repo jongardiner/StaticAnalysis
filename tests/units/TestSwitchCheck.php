@@ -26,19 +26,63 @@ class TestSwitchCheck extends \PHPUnit_Framework_TestCase {
 			}
 		?>';
 
-		$output = new \N98\JUnitXml\Document;
+
+		$builder = $this->getMockBuilder(Scan\Output\OutputInterface::class);
+		$output = $builder
+			->setMethods(["emitError"])
+			->getMockForAbstractClass();
+
+		$output->expects($this->exactly(2))->method("emitError")->withConsecutive(
+			[
+				$this->anything(), $this->anything(),
+				$this->equalTo(5),
+				$this->stringContains( \Scan\Checks\SwitchCheck::TYPE_MISSING_BREAK ),
+				$this->anything()
+			],
+			[
+				$this->anything(), $this->anything(),
+				$this->equalTo(8),
+				$this->stringContains( \Scan\Checks\SwitchCheck::TYPE_MISSING_BREAK ),
+				$this->anything()
+			]
+		);
+
 		$emptyTable = new \Scan\SymbolTable\InMemorySymbolTable(__DIR__);
 
 		$stmts = self::parseText($code);
 		$check = new \Scan\Checks\SwitchCheck($emptyTable, $output);
 		$check->run(__FILE__, $stmts[0], null, null);
+	}
 
-		$failures=$output->getElementsByTagName("failure");
+	function testGoodSwitch() {
+		$code = '<?
+			switch($size) {
+				case \'small\': $size=1; $originalWidth=$originalHeight=$width=$height=150; break;
+				case \'tiny\' : $size=1; $originalWidth=$originalHeight=150; $width=$height=20; break;
+				case \'original\': $size=0; break;
+				case \'large\': $size=2; break;
+				case \'xs\': $size=3; break; // xs is our tiny of 50 by 50
+				case \'medium\': $size=4; break;
+				default:
+					$response->responseCodeHeader(404,"Not found");
+					$response->errorMessage("size not found must be small or tiny");
+					return true;
+			}
+			';
 
-		// Confirm there are only 2 errors and they occur on lines 3 & 6.
-		$this->assertEquals( 2, $failures->length );
-		$this->assertStringEndsWith(" on line 5", $failures->item(0)->textContent );
-		$this->assertStringEndsWith(" on line 8", $failures->item(1)->textContent );
+
+		$builder = $this->getMockBuilder(Scan\Output\OutputInterface::class);
+		$output = $builder
+			->setMethods(["emitError"])
+			->getMockForAbstractClass();
+
+		$output->expects($this->never())->method("emitError");
+
+		$emptyTable = new \Scan\SymbolTable\InMemorySymbolTable(__DIR__);
+
+		$stmts = self::parseText($code);
+		$check = new \Scan\Checks\SwitchCheck($emptyTable, $output);
+		$check->run(__FILE__, $stmts[0], null, null);
 	}
 
 }
