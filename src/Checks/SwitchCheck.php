@@ -16,15 +16,14 @@ class SwitchCheck extends BaseCheck
 	}
 
 	static function endWithBreak(array $stmts) {
-		$lastStatement = end($stmts);
-		$count=0;
+		$lastStatement = null;
 		foreach($stmts as $stmt) {
 			if(!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
-				$count++;
+				$lastStatement = $stmt;
 			}
 		}
 		return
-			$count==0 ||
+			$lastStatement == null ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
 			$lastStatement instanceof \PhpParser\Node\Expr\Exit_ ||
