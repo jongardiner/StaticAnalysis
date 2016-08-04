@@ -9,6 +9,8 @@ use PhpParser\Node\Stmt\ClassLike;
 use Scan\Scope;
 use Scan\Util;
 
+class ImpossibleInjectionException extends \Exception { }
+
 class ImpossibleInjectionCheck extends BaseCheck
 {
 	function getCheckNodeTypes() {
@@ -24,12 +26,12 @@ class ImpossibleInjectionCheck extends BaseCheck
 	function isInjectable($className, $available, $used=[]) {
 		if(in_array($className, $used)) {
 			// We've detected a loop.  Therefore, this is not injectable.
-			return false;
+			throw new ImpossibleInjectionException("Dependency loop detected trying to inject $className\n");
 		}
 		if (in_array($className, $available)) {
 			return true;
 		} else {
-			array_push($used, $className);
+			array_push($used, strval($className));
 			$dependencies = $this->getConstructorDependencies($className);
 			if (count($dependencies)==0) {
 				return true;
@@ -37,15 +39,21 @@ class ImpossibleInjectionCheck extends BaseCheck
 
 			foreach ($dependencies as $dependencyName) {
 				if(empty($dependencyName) || self::isNonClass($dependencyName)) {
-					return false;
+					throw new ImpossibleInjectionException("Constructor for $className doesn't type hint a parameter");
 				}
 				$class = $this->symbolTable->getAbstractedClass($dependencyName);
-				if(
-					!$class ||
-					$class->isDeclaredAbstract() ||
-					($class->isInterface() && !in_array($className, $available)) ||
-					!$this->isInjectable($dependencyName, $available, $used)
-				) {
+				if(!$class) {
+					throw new ImpossibleInjectionException("Unknown class");
+				}
+				if($class->isDeclaredAbstract() && !in_array($className, $available)) {
+					throw new ImpossibleInjectionException("Abstract class $className is not available");
+				}
+				if($class->isInterface() && !in_array($className, $available)) {
+					throw new ImpossibleInjectionException("Interface $className is not available");
+				}
+				if(!$this->isInjectable($dependencyName, $available, $used)) {
+
+					// Something else will throw an exception, so we don't need to in the recursive case.
 					return false;
 				}
 			}
@@ -67,7 +75,6 @@ class ImpossibleInjectionCheck extends BaseCheck
 	 * @param \PhpParser\Node\Expr\FuncCall $node
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
-
 		if ($node->name instanceof Name) {
 			$name = $node->name->toString();
 
@@ -75,20 +82,30 @@ class ImpossibleInjectionCheck extends BaseCheck
 			$this->incTests();
 			if($toLower=='inject') {
 				if(count($node->args)==2) {
-					$name = $node->args[0];
-					$classes = $node->args[1];
-					if($name instanceof ClassConstFetch && $classes instanceof Array_ && $name->class instanceof Name && strcasecmp($name->name,"class")==0) {
+					$name = $node->args[0]->value;
+					$classes = $node->args[1]->value;
+					if(
+						$name instanceof ClassConstFetch &&
+						$name->class instanceof Name &&
+						strcasecmp($name->name,"class")==0 &&
+						$classes instanceof Array_
+
+					) {
 						$nameString = $name->class;
 						$availableObjects=$classes->items;
 						$available=[];
 						foreach($availableObjects as $item) {
 							$key=$item->key;
 							if($key instanceof ClassConstFetch && strcasecmp($key->name,"class")==0 && $key->class instanceof Name) {
-								$available[] = $key->name;
+								$available[] = strval($key->class);
 							}
 						}
-						if(!$this->isInjectable($nameString, $available)) {
-							$this->emitError($fileName, $node, "BambooHR.Impossible.Inject", "Impossible call to inject() for $nameString::class");
+						try {
+							if (!$this->isInjectable($nameString, $available)) {
+								$this->emitError($fileName, $node, "BambooHR.Impossible.Inject", "Impossible call to inject() for $nameString:");
+							}
+						} catch(ImpossibleInjectionException $ex) {
+							$this->emitError($fileName, $node,"BambooHR.Impossible.Inject", "Impossible call to inject for $nameString: ".$ex->getMessage());
 						}
 						return;
 					}
