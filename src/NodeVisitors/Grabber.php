@@ -1,10 +1,10 @@
 <?php namespace Scan\NodeVisitors;
 
+use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitor;
 use PhpParser\ParserFactory;
-use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use Scan\Exceptions\UnknownTraitException;
 use Scan\SymbolTable\SymbolTable;
@@ -99,10 +99,15 @@ class Grabber implements NodeVisitor {
 		} else {
 			$contents = file_get_contents($fileName);
 			$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
-			$stmts = $parser->parse($contents);
+			try {
+				$stmts = $parser->parse($contents);
+			} catch(Error $error) {
+				echo "Error parsing: $contents\n";
+				return null;
+			}
 
 			$traverser = new NodeTraverser;
-			$traverser->addVisitor(new NameResolver());
+			$traverser->addVisitor(new DocBlockNameResolver());
 			$stmts = $traverser->traverse( $stmts );
 
 			if($classType==Class_::class) {

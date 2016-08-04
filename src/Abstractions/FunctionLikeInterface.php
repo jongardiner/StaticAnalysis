@@ -2,14 +2,16 @@
 namespace Scan\Abstractions;
 
 interface FunctionLikeInterface {
+	/** @return FunctionLikeParameter[] */
 	function getParameters();
 	function getMinimumRequiredParameters();
 	function getReturnType();
-	function isStatic();
 	function isInternal();
+
+
 	function getName();
-	function getAccessLevel();
-	function isAbstract();
+
+
 	function getStartingLine();
 	function isVariadic();
 }

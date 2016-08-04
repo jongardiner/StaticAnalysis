@@ -6,13 +6,24 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use Scan\NodeVisitors\StaticAnalyzer;
+use Scan\Output\OutputInterface;
 use Scan\Scope;
+use Scan\SymbolTable\SymbolTable;
+use Scan\TypeInferrer;
 use Scan\Util;
 use Scan\Abstractions\FunctionLikeInterface;
 
 
 class MethodCall extends BaseCheck
 {
+	/** @var TypeInferrer */
+	private $inferenceEngine;
+
+	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+		parent::__construct($symbolTable, $doc);
+		$this->inferenceEngine = new TypeInferrer($symbolTable);
+	}
+
 	function getCheckNodeTypes() {
 		return [\PhpParser\Node\Expr\MethodCall::class];
 	}
@@ -35,22 +46,18 @@ class MethodCall extends BaseCheck
 
 		$varName = "{expr}";
 		$className = "";
-		if($node->var instanceof Variable) {
-			if(gettype($node->var->name)=="string") {
-				$varName = $node->var->name;
-			}
-			if ($node->var->name == "this") {
-				if (!$inside) {
-					$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
-					return;
-				} else {
-					$className = strval($inside->namespacedName);
-				}
-			} else if ($scope) {
-				$className = StaticAnalyzer::inferType($inside, $node->var, $scope);
-			}
+		if($node->var instanceof Variable && $node->var->name == "this" && !$inside) {
+			$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
+			return;
+		}
+		if ($scope) {
+			$className = $this->inferenceEngine->inferType($inside, $node->var, $scope);
 		}
 		if($className!="" && $className[0]!="!") {
+			if(!$this->symbolTable->getAbstractedClass($className)) {
+				$this->emitError($fileName, $node, self::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
+				return;
+			}
 			//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
 			$method = Util::findAbstractedMethod( $className, $methodName, $this->symbolTable);
 			if ($method) {
@@ -61,7 +68,7 @@ class MethodCall extends BaseCheck
 					!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) &&
 					!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
 				) {
-					// $this->emitError($fileName, $node, "Unknown method", "Call to unknown method of $className: \$".$varName."->" .$methodName);
+					$this->emitError($fileName, $node, self::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className: \$".$varName."->" .$methodName);
 				}
 			}
 		}

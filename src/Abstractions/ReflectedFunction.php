@@ -1,11 +1,12 @@
 <?php
+
 namespace Scan\Abstractions;
 
 
-class ReflectedClassMethod implements MethodInterface {
+class ReflectedFunction implements FunctionLikeInterface {
 	private $refl;
 
-	function __construct(\ReflectionMethod $refl) {
+	function __construct(\ReflectionFunction $refl) {
 		$this->refl = $refl;
 	}
 
@@ -40,9 +41,13 @@ class ReflectedClassMethod implements MethodInterface {
 		$ret = [];
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
-		foreach($params as $param) {
+		foreach($params as $index=>$param) {
 			$type = $param->getClass() ? $param->getClass()->name : '';
-			$ret[] = new FunctionLikeParameter( $type , $param->name, $param->isOptional(), $param->isPassedByReference());
+			$isPassedByReference = $param->isPassedByReference();
+			if($this->getName()=="preg_match" && $index==2) {
+				$isPassedByReference = true;
+			}
+			$ret[] = new FunctionLikeParameter( $type , $param->name, $param->isOptional(), $isPassedByReference);
 		}
 		return $ret;
 	}

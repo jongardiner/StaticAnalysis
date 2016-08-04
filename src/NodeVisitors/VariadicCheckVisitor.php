@@ -1,15 +1,9 @@
 <?php namespace Scan\NodeVisitors;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeTraverserInterface;
 use PhpParser\NodeVisitor;
-use PhpParser\ParserFactory;
-use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
-use Scan\Exceptions\UnknownTraitException;
-use Scan\SymbolTable\SymbolTable;
-use Scan\Util;
 
 class VariadicCheckVisitor implements NodeVisitor
 {

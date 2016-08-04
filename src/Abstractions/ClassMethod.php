@@ -3,16 +3,18 @@ namespace Scan\Abstractions;
 
 use PhpParser\Node\Stmt\Function_;
 use Scan\NodeVisitors\VariadicCheckVisitor;
+use Scan\Scope;
 use Scan\Util;
 
-class ClassMethod implements FunctionLikeInterface {
+class ClassMethod implements MethodInterface {
 	private $method;
 
 	function __construct(\PhpParser\Node\Stmt\ClassMethod $method) {
 		$this->method = $method;
 	}
 	function getReturnType() {
-		return "";
+		$type = $this->method->getAttribute("namespacedReturn");
+		return ($type?$type:"");
 	}
 
 	function getMinimumRequiredParameters() {

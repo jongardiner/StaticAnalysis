@@ -3,12 +3,15 @@
 use PhpParser\Node;
 use PhpParser\NodeTraverserInterface;
 use PhpParser\NodeVisitor;
+use Scan\Abstractions\FunctionLikeParameter;
 use Scan\Checks;
 use Scan\Output\OutputInterface;
 use Scan\Scope;
 use Scan\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
+use Scan\TypeInferrer;
+use Scan\Util;
 
 class StaticAnalyzer implements NodeVisitor {
 	/** @var  SymbolTable */
@@ -25,9 +28,13 @@ class StaticAnalyzer implements NodeVisitor {
 	/** @var Scope[] */
 	private $scopeStack = [];
 
+	/** @var TypeInferrer */
+	private $typeInferrer;
+
 	function __construct($basePath, $index, OutputInterface $output, $config) {
 		$this->index = $index;
 		$this->scopeStack = [new Scope(true, true)];
+		$this->typeInferrer = new TypeInferrer($index);
 
 		/** @var Checks\BaseCheck[] $checkers */
 		$checkers = [
@@ -91,18 +98,71 @@ class StaticAnalyzer implements NodeVisitor {
 		}
 		if($node instanceof Node\Stmt\Global_) {
 			foreach($node->vars as $var) {
-				if($var instanceof Node\Expr\Variable && $var->name instanceof Node\Name) {
+				if($var instanceof Node\Expr\Variable && gettype($var->name)=="string") {
 					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
 				}
 			}
-
 		}
+		if($node instanceof Node\Expr\MethodCall) {
+			if($node->var instanceof Node\Expr\Variable && gettype($node->var->name)=="string" && gettype($node->name)=="string") {
+				$method = $this->index->getAbstractedMethod($node->var->name, $node->name);
+				if($method) {
+					/** @var FunctionLikeParameter[] $params */
+					$params = $method->getParameters();
+					foreach ($node->args as $index => $arg) {
+						if (isset($params[$index]) && $params[$index]->isReference()) {
+							if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
+								$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+							}
+						}
+					}
+				}
+			}
+		}
+		if($node instanceof Node\Expr\StaticCall) {
+			if($node->class instanceof Node\Name && gettype($node->name)=="string") {
+				$method=$this->index->getAbstractedMethod( strval($node->class), strval($node->name));
+				if($method) {
+					/** @var FunctionLikeParameter[] $params */
+					$params = $method->getParameters();
+					foreach ($node->args as $index => $arg) {
+						if (isset($params[$index]) && $params[$index]->isReference()) {
+							if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
+								$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+							}
+						}
+					}
+				}
+			}
+		}
+		if($node instanceof Node\Expr\FuncCall) {
+			if($node->name instanceof Node\Name) {
+				$function = $this->index->getAbstractedFunction(strval($node->name));
+				if($function) {
+					$params = $function->getParameters();
+					foreach ($node->args as $index => $arg) {
+						if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string" &&
+							isset($params[$index]) && $params[$index]->isReference()
+						) {
+							$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+						}
+					}
+				}
+			}
+		}
+
 		if($node instanceof Node\Stmt\Foreach_) {
 			if($node->keyVar instanceof Node\Expr\Variable && gettype($node->keyVar->name)=="string") {
 				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE);
 			}
 			if($node->valueVar instanceof Node\Expr\Variable && gettype($node->valueVar->name)=="string") {
-				$this->setScopeType(strval($node->valueVar->name), Scope::MIXED_TYPE);
+				$type = $this->typeInferrer->inferType(end($this->classStack)?:null, $node->expr, end($this->scopeStack));
+				if(substr($type,-2)=="[]") {
+					$type=substr($type,0,-2);
+				} else {
+					$type=Scope::MIXED_TYPE;
+				}
+				$this->setScopeType(strval($node->valueVar->name), $type);
 			}
 		}
 		if($node instanceof Node\Stmt\If_ || $node instanceof Node\Stmt\ElseIf_) {
@@ -193,40 +253,10 @@ class StaticAnalyzer implements NodeVisitor {
 		return ($node instanceof Node\Stmt\If_ || $node instanceof Node\Stmt\ElseIf_) && $node->cond instanceof Node\Expr\Instanceof_;
 	}
 
-	/**
-	 * Do some simplistic checks to see if we can figure out object type.  If we can, then we can check method calls
-	 * using that variable for correctness.
-	 * @param Node\Expr $expr
-	 * @param Scope     $scope
-	 * @return string
-	 */
-	static function inferType(Node\Stmt\ClassLike $inside = null, Node\Expr $expr=null, Scope $scope) {
-		if ($expr instanceof Node\Scalar || $expr instanceof Node\Expr\AssignOp) {
-			return Scope::SCALAR_TYPE;
-		} else if ($expr instanceof Node\Expr\New_ && $expr->class instanceof Node\Name) {
-			$className = strval($expr->class);
-			if (strcasecmp($className, "self") == 0) {
-				$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
-			} else if (strcasecmp($className, "static") == 0) {
-				$className = Scope::MIXED_TYPE;
-			}
-			return $className;
-		} else if ($expr instanceof Node\Expr\Variable && gettype($expr->name) == "string") {
-			$varName = strval($expr->name);
-			$scopeType = $scope->getVarType($varName);
-			if ($scopeType != Scope::UNDEFINED) {
-				return $scopeType;
-			}
-		} else if ($expr instanceof Node\Expr\Closure) {
-			return "callable";
-		}
-		return Scope::MIXED_TYPE;
-	}
-
 	private function setScopeExpression($varName, $expr) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
-		$newType = self::inferType($class, $expr, $scope);
+		$newType = $this->typeInferrer->inferType($class, $expr, $scope);
 		$this->setScopeType($varName, $newType);
 	}
 
@@ -256,11 +286,16 @@ class StaticAnalyzer implements NodeVisitor {
 		} else if ($op->var instanceof Node\Expr\List_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->vars as $var) {
-				if ($var && $var instanceof Node\Expr\Variable && $var->name instanceof Node\Name) {
-					echo "Adding list var: ".$var->name."\n";
+				if ($var && $var instanceof Node\Expr\Variable && gettype($var->name)=="string") {
 					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
 				}
 			}
+		} else if($op->var instanceof Node\Expr\ArrayDimFetch) {
+			if($op->var->var instanceof Node\Expr\Variable && gettype($op->var->var->name)=="string") {
+				$varName = strval($op->var->var->name);
+				$this->setScopeType($varName, "array");
+			}
+
 		}
 	}
 

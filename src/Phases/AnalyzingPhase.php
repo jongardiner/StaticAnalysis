@@ -5,7 +5,6 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
-use Scan\Checks\BaseCheck;
 use Scan\Config;
 use Scan\NodeVisitors\TraitImportingVisitor;
 use Scan\Util;
@@ -56,9 +55,9 @@ class AnalyzingPhase
 					$traverser3->traverse($stmts);
 				}
 			} catch (Error $e) {
-				$output->emitError( __CLASS__, $file, 0,BaseCheck::TYPE_PARSE_ERROR, "Parse error: ".$e->getMessage() );
+				$output->emitError( __CLASS__, $file, 0, "Parse error", $e->getMessage() );
 			} catch(\Scan\Exceptions\UnknownTraitException $e) {
-				$output->emitError( __CLASS__, $file, 0,BaseCheck::TYPE_UNKNOWN_CLASS, "Unknown trait: ".$e->getMessage() );
+				$output->emitError( __CLASS__, $file, 0, "Unknown trait error", $e->getMessage() );
 			}
 
 		}
