@@ -51,7 +51,7 @@ class Scope
 	 * @return Scope
 	 */
 	function getScopeClone() {
-		$ret = new Scope($this->isStatic);
+		$ret = new Scope($this->isStatic, $this->isGlobal);
 		$ret->vars = $this->vars;
 		return $ret;
 	}

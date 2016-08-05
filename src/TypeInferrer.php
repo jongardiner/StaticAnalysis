@@ -21,7 +21,9 @@ class TypeInferrer
 	 * @return string
 	 */
 	function inferType(Node\Stmt\ClassLike $inside = null, Node\Expr $expr=null, Scope $scope) {
-		if ($expr instanceof Node\Scalar || $expr instanceof Node\Expr\AssignOp) {
+		if ($expr instanceof Node\Expr\AssignOp) {
+			return $this->inferType($inside, $expr->expr, $scope);
+		} else if ($expr instanceof Node\Scalar) {
 			return Scope::SCALAR_TYPE;
 		} else if ($expr instanceof Node\Expr\New_ && $expr->class instanceof Node\Name) {
 			$className = strval($expr->class);
@@ -46,7 +48,7 @@ class TypeInferrer
 			$func = $this->index->getFunction($expr->name);
 			if($func) {
 				$namespacedReturn =$func->getAttribute("namespacedReturn");
-				return $namespacedReturn;
+				return $namespacedReturn ?: Scope::MIXED_TYPE;
 			}
 		} else if( $expr instanceof Node\Expr\MethodCall && gettype($expr->name)=="string") {
 			$class = $this->inferType($inside, $expr->var, $scope);

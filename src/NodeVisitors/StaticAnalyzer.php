@@ -11,7 +11,6 @@ use Scan\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use Scan\TypeInferrer;
-use Scan\Util;
 
 class StaticAnalyzer implements NodeVisitor {
 	/** @var  SymbolTable */
@@ -104,15 +103,19 @@ class StaticAnalyzer implements NodeVisitor {
 			}
 		}
 		if($node instanceof Node\Expr\MethodCall) {
-			if($node->var instanceof Node\Expr\Variable && gettype($node->var->name)=="string" && gettype($node->name)=="string") {
-				$method = $this->index->getAbstractedMethod($node->var->name, $node->name);
-				if($method) {
-					/** @var FunctionLikeParameter[] $params */
-					$params = $method->getParameters();
-					foreach ($node->args as $index => $arg) {
-						if (isset($params[$index]) && $params[$index]->isReference()) {
-							if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
-								$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+			if(gettype($node->name)=="string") {
+
+				$type = $this->typeInferrer->inferType( end($this->classStack)?:null, $node->var,end($this->scopeStack) );
+				if($type && $type[0]!="!") {
+					$method = $this->index->getAbstractedMethod($type, $node->name);
+					if ($method) {
+						/** @var FunctionLikeParameter[] $params */
+						$params = $method->getParameters();
+						foreach ($node->args as $index => $arg) {
+							if (isset($params[$index]) && $params[$index]->isReference()) {
+								if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
+									$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+								}
 							}
 						}
 					}
@@ -280,7 +283,7 @@ class StaticAnalyzer implements NodeVisitor {
 	 * @param Node\Expr\Assign $op
 	 */
 	private function handleAssignment(Node\Expr\Assign $op) {
-		if ($op->var instanceof Node\Expr\Variable && !($op->var->name instanceof Node)) {
+		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name)=="string") {
 			$varName = strval($op->var->name);
 			$this->setScopeExpression($varName, $op->expr);
 		} else if ($op->var instanceof Node\Expr\List_) {
@@ -291,11 +294,14 @@ class StaticAnalyzer implements NodeVisitor {
 				}
 			}
 		} else if($op->var instanceof Node\Expr\ArrayDimFetch) {
-			if($op->var->var instanceof Node\Expr\Variable && gettype($op->var->var->name)=="string") {
-				$varName = strval($op->var->var->name);
+			$var=$op->var;
+			while($var instanceof Node\Expr\ArrayDimFetch) {
+				$var=$var->var;
+			}
+			if($var instanceof Node\Expr\Variable && gettype($var->name)=="string") {
+				$varName = strval($var->name);
 				$this->setScopeType($varName, "array");
 			}
-
 		}
 	}
 
