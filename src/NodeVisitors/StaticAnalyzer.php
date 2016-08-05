@@ -178,6 +178,12 @@ class StaticAnalyzer implements NodeVisitor {
 					$type=Scope::MIXED_TYPE;
 				}
 				$this->setScopeType(strval($node->valueVar->name), $type);
+			} else if($node->valueVar instanceof Node\Expr\List_) {
+				foreach($node->valueVar->vars as $var) {
+					if($var instanceof Node\Expr\Variable && gettype($var->name)=="string") {
+						$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
+					}
+				}
 			}
 		}
 		if($node instanceof Node\Stmt\If_ || $node instanceof Node\Stmt\ElseIf_) {
