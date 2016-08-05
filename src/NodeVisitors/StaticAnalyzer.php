@@ -111,8 +111,12 @@ class StaticAnalyzer implements NodeVisitor {
 					if ($method) {
 						/** @var FunctionLikeParameter[] $params */
 						$params = $method->getParameters();
+						$paramCount = count($params);
 						foreach ($node->args as $index => $arg) {
-							if (isset($params[$index]) && $params[$index]->isReference()) {
+							if (
+								(isset($params[$index]) && $params[$index]->isReference()) ||
+								($index>=$paramCount && $paramCount>0 && $params[$paramCount-1]->isReference())
+							) {
 								if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
 									$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
 								}
@@ -128,8 +132,12 @@ class StaticAnalyzer implements NodeVisitor {
 				if($method) {
 					/** @var FunctionLikeParameter[] $params */
 					$params = $method->getParameters();
+					$paramCount = count($params);
 					foreach ($node->args as $index => $arg) {
-						if (isset($params[$index]) && $params[$index]->isReference()) {
+						if (
+							(isset($params[$index]) && $params[$index]->isReference()) ||
+							($index>=$paramCount && $paramCount>0 && $params[$paramCount-1]->isReference())
+						) {
 							if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string") {
 								$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
 							}
@@ -143,9 +151,13 @@ class StaticAnalyzer implements NodeVisitor {
 				$function = $this->index->getAbstractedFunction(strval($node->name));
 				if($function) {
 					$params = $function->getParameters();
+					$paramCount = count($params);
 					foreach ($node->args as $index => $arg) {
 						if ($arg->value instanceof Node\Expr\Variable && gettype($arg->value->name) == "string" &&
-							isset($params[$index]) && $params[$index]->isReference()
+							(
+								(isset($params[$index]) && $params[$index]->isReference()) ||
+								($index>=$paramCount && $paramCount>0 && $params[$paramCount-1]->isReference())
+							)
 						) {
 							$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
 						}
