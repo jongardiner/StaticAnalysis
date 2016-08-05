@@ -86,7 +86,7 @@ class StaticAnalyzer implements NodeVisitor {
 		if($node instanceof Node\FunctionLike) { // Typecast
 			$this->pushFunctionScope($node);
 		}
-		if ($node instanceof Node\Expr\Assign) {
+		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
 			$this->handleAssignment($node);
 		}
 		if ($node instanceof Node\Stmt\StaticVar) {
@@ -292,9 +292,9 @@ class StaticAnalyzer implements NodeVisitor {
 	/**
 	 * Assignment can cause a new variable to come into scope.  We infer the type of the expression (if possible) and
 	 * add an entry to the variable table for this scope.
-	 * @param Node\Expr\Assign $op
+	 * @param Node\Expr\Assign|Node\Expr\AssignRef $op
 	 */
-	private function handleAssignment(Node\Expr\Assign $op) {
+	private function handleAssignment( $op) {
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name)=="string") {
 			$varName = strval($op->var->name);
 			$this->setScopeExpression($varName, $op->expr);

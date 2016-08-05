@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\TraitUseAdaptation;
+use Scan\DoWhileStatement;
 use Scan\SymbolTable\SymbolTable;
 
 /**
@@ -147,6 +148,12 @@ class TraitImportingVisitor implements NodeVisitor {
 			assert($class);
 			$traits = $this->resolveTraits($node,$class);
 			return $traits;
+		}
+		// The default do/while visits the condition before the statement list.
+		// This causes undefined variable errors.  We correct it by replacing it with
+		// a subclass that in the order we need.
+		if($node instanceOf Node\Stmt\Do_) {
+			return DoWhileStatement::fromDo_($node);
 		}
 		return null;
 	}
