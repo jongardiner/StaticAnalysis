@@ -1,9 +1,8 @@
 <?php
 namespace Scan\Abstractions;
 
-use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Function_ as ParserFunction;
 use Scan\NodeVisitors\VariadicCheckVisitor;
-use Scan\Scope;
 use Scan\Util;
 
 class ClassMethod implements MethodInterface {
@@ -68,7 +67,7 @@ class ClassMethod implements MethodInterface {
 				return true;
 			}
 		}
-		if($this->method instanceof Function_ || $this->method instanceof \PhpParser\Node\Stmt\ClassMethod) {
+		if($this->method instanceof ParserFunction || $this->method instanceof \PhpParser\Node\Stmt\ClassMethod) {
 			return VariadicCheckVisitor::isVariadic($this->method->getStmts());
 		}
 		return false;
