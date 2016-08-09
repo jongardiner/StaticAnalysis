@@ -75,6 +75,8 @@ class ImpossibleInjectionCheck extends BaseCheck
 	/**
 	 * @param string                        $fileName
 	 * @param \PhpParser\Node\Expr\FuncCall $node
+	 * @param ClassLike                     $inside
+	 * @param Scope                         $scope
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->name instanceof Name) {
@@ -100,6 +102,9 @@ class ImpossibleInjectionCheck extends BaseCheck
 							$key=$item->key;
 							if($key instanceof ClassConstFetch && strcasecmp($key->name,"class")==0 && $key->class instanceof Name) {
 								$available[] = strval($key->class);
+								if(strval($key->class)=='BLocale') {
+									$available[] = 'BambooHR\Repository\BLocale';
+								}
 							}
 						}
 						try {
