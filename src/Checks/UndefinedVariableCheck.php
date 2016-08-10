@@ -18,7 +18,7 @@ class UndefinedVariableCheck extends BaseCheck
 
 		if(gettype($node->name)=='string' && $scope && !$scope->isGlobal()) {
 			$name = $name=$node->name;
-			if($name!="GLOBALS" && $name!="_GET" && $name!="_POST" && $name!="_COOKIE" && $name!="_REQUEST" && $name!="this" && $name!="_SERVER" && $name!="_SESSION" && $name!="_FILES") {
+			if($name!="GLOBALS" && $name!="_GET" && $name!="_POST" && $name!="_COOKIE" && $name!="_REQUEST" && $name!="this" && $name!="_SERVER" && $name!="_SESSION" && $name!="_FILES" && $name!="http_response_header") {
 				$this->incTests();
 				if($scope->getVarType($name)==Scope::UNDEFINED) {
 					$this->emitError($fileName, $node, self::TYPE_UNKNOWN_VARIABLE, "Undefined variable: $name");
