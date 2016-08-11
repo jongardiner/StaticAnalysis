@@ -1,5 +1,5 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 class FunctionLikeParameter {
 	private $type;

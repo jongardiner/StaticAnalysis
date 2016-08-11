@@ -6,7 +6,7 @@
  * Time: 4:42 PM
  */
 
-namespace Scan;
+namespace Guardrail;
 
 
 class Scope

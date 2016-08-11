@@ -1,4 +1,4 @@
-<?php namespace Scan\NodeVisitors;
+<?php namespace Guardrail\NodeVisitors;
 
 use PhpParser\Error;
 use PhpParser\Node;
@@ -6,9 +6,8 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitor;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
-use Scan\Exceptions\UnknownTraitException;
-use Scan\SymbolTable\SymbolTable;
-use Scan\Util;
+use Guardrail\Exceptions\UnknownTraitException;
+use Guardrail\SymbolTable\SymbolTable;
 
 class Grabber implements NodeVisitor {
 	const FROM_NAME=1;

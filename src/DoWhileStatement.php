@@ -1,5 +1,5 @@
 <?php
-namespace Scan;
+namespace Guardrail;
 
 use PhpParser\Node\Stmt\Do_;
 

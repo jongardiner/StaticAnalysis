@@ -1,4 +1,6 @@
-<?php namespace Scan;
+<?php namespace Guardrail;
+
+use Guardrail\Exceptions\InvalidConfigException;
 
 class Config {
 	const MEMORY_SYMBOL_TABLE=1;
@@ -34,7 +36,7 @@ class Config {
 	/** @var int MEMORY_SYMBOL_TABLE | SQLITE_SYMBOL_TABLE */
 	private $preferredTable = self::MEMORY_SYMBOL_TABLE;
 
-	/** @var \Scan\SymbolTable\SymbolTable */
+	/** @var \Guardrail\SymbolTable\SymbolTable */
 	private $symbolTable = null;
 
 	/** @var string[]|false The list of files to process */
@@ -88,10 +90,10 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			$this->symbolTable = new \Scan\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
+			$this->symbolTable = new \Guardrail\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
 		} else {
 			$this->forceIndex=true;
-			$this->symbolTable = new \Scan\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
+			$this->symbolTable = new \Guardrail\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
 		}
 
 	}

@@ -1,13 +1,14 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Abstractions\FunctionLikeParameter;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Abstractions\FunctionLikeParameter;
+use Guardrail\Scope;
+use Guardrail\Util;
 
 class InstantiationCheck extends BaseCheck
 {

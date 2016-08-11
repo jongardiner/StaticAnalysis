@@ -1,12 +1,11 @@
-<?php namespace Scan;
+<?php namespace Guardrail;
 
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\Property;
-use PhpParser\Node\Stmt\PropertyProperty;
-use Scan\SymbolTable\SymbolTable;
+use Guardrail\SymbolTable\SymbolTable;
+use Guardrail\Abstractions;
 use Webmozart\Glob\Glob;
 
 class Util {
@@ -64,7 +63,7 @@ class Util {
 	 */
 	static function findMethod(Class_ $node, $name, SymbolTable $symbolTable) {
 		while ($node) {
-			$methods = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\ClassMethod::class);
+			$methods = \Guardrail\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\ClassMethod::class);
 			foreach($methods as $method) {
 				if(strcasecmp($method->name,$name)==0) {
 					return $method;
@@ -84,7 +83,7 @@ class Util {
 	 * @param             $className
 	 * @param             $name
 	 * @param SymbolTable $symbolTable
-	 * @return null|Abstractions\Class_|Abstractions\ClassMethod|Abstractions\ReflectedClassMethod
+	 * @return null|\Guardrail\Abstractions\Class_|\Guardrail\Abstractions\ClassMethod|\Guardrail\Abstractions\ReflectedClassMethod
 	 */
 	static function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
@@ -112,7 +111,7 @@ class Util {
 	 */
 	static function findProperty(Class_ $node, $name, SymbolTable $symbolTable) {
 		while ($node) {
-			$properties = \Scan\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\Property::class);
+			$properties = \Guardrail\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\Property::class);
 			/** @var Property[] $propertyList */
 			foreach($properties as $props) {
 				/** @var Property $props */

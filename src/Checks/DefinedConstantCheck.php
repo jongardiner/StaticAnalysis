@@ -1,11 +1,12 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Name;
-use Scan\Scope;
-use Scan\SymbolTable\SymbolTable;
+use Guardrail\Scope;
+use Guardrail\SymbolTable\SymbolTable;
 use N98\JUnitXml;
 
 class DefinedConstantCheck extends BaseCheck {
@@ -59,7 +60,7 @@ class DefinedConstantCheck extends BaseCheck {
 		"__COMPILER_HALT_OFFSET__"
 	];
 
-	function __construct(SymbolTable $symbolTable, \Scan\Output\OutputInterface $output) {
+	function __construct(SymbolTable $symbolTable, \Guardrail\Output\OutputInterface $output) {
 		parent::__construct($symbolTable, $output);
 
 		foreach(get_loaded_extensions() as $extension) {

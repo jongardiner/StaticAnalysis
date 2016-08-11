@@ -1,6 +1,6 @@
 <?php
 
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 class Property {
 	private $type;

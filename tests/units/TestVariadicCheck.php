@@ -28,10 +28,10 @@ class TestVariadicCheck extends \PHPUnit_Framework_TestCase {
 		';
 
 
-		$this->assertTrue( \Scan\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code)), "Nested call not detected");
-		$this->assertTrue( \Scan\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code1)),"Top level func_num_args() call not detected");
-		$this->assertTrue( \Scan\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code2)),"Top level func_get_arg() call not detected");
-		$this->assertFalse( \Scan\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code3)),"Clean code not detected variadic");
+		$this->assertTrue( \Guardrail\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code)), "Nested call not detected");
+		$this->assertTrue( \Guardrail\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code1)),"Top level func_num_args() call not detected");
+		$this->assertTrue( \Guardrail\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code2)),"Top level func_get_arg() call not detected");
+		$this->assertFalse( \Guardrail\NodeVisitors\VariadicCheckVisitor::isVariadic(self::parseText($code3)),"Clean code not detected variadic");
 	}
 
 }

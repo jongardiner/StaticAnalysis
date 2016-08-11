@@ -1,17 +1,16 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
+use Guardrail\Abstractions\MethodInterface;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
-use Scan\NodeVisitors\StaticAnalyzer;
-use Scan\Output\OutputInterface;
-use Scan\Scope;
-use Scan\SymbolTable\SymbolTable;
-use Scan\TypeInferrer;
-use Scan\Util;
-use Scan\Abstractions\FunctionLikeInterface;
+use Guardrail\Output\OutputInterface;
+use Guardrail\Scope;
+use Guardrail\SymbolTable\SymbolTable;
+use Guardrail\TypeInferrer;
+use Guardrail\Util;
 
 
 class MethodCall extends BaseCheck
@@ -81,7 +80,7 @@ class MethodCall extends BaseCheck
 	 * @param Scope     $scope
 	 * @param           $method
 	 */
-	protected function checkMethod($fileName, $node, $inside, Scope $scope, FunctionLikeInterface $method) {
+	protected function checkMethod($fileName, $node, $inside, Scope $scope, MethodInterface $method) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, self::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $inside::" . $method->getName(). " non-statically");
 			return;

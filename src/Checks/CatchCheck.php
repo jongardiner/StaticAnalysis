@@ -1,9 +1,10 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Scope;
+use Guardrail\Util;
 
 class CatchCheck extends BaseCheck
 {

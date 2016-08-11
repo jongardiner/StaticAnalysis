@@ -1,9 +1,11 @@
 <?php
 
-namespace Scan;
+namespace Guardrail;
 
-use Scan\Phases\IndexingPhase;
-use Scan\Phases\AnalyzingPhase;
+use Guardrail\Phases\IndexingPhase;
+use Guardrail\Phases\AnalyzingPhase;
+use Guardrail\Config;
+use Guardrail\Exceptions\InvalidConfigException;
 
 class CommandLineRunner
 {
@@ -49,7 +51,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
-		$output = new Output\XUnitOutput($config);
+		$output = new \Guardrail\Output\XUnitOutput($config);
 
 		if($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");

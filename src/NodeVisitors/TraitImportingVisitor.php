@@ -1,4 +1,4 @@
-<?php namespace Scan\NodeVisitors;
+<?php namespace Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
@@ -7,12 +7,12 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\TraitUseAdaptation;
-use Scan\DoWhileStatement;
-use Scan\SymbolTable\SymbolTable;
+use Guardrail\DoWhileStatement;
+use Guardrail\Exceptions\UnknownTraitException;
+use Guardrail\SymbolTable\SymbolTable;
 
 /**
  * Class TraitImportingVisitor
- * @package Scan\NodeVisitors
  *
  * This visitor modifies the tree by replacing Use statements in traits/classes with
  * the appropriate methods and properties.
@@ -100,7 +100,7 @@ class TraitImportingVisitor implements NodeVisitor {
 			$traitName = strval($useTrait);
 			$trait = $this->index->getTrait($traitName);
 			if (!$trait) {
-				throw new \Scan\Exceptions\UnknownTraitException($traitName, $this->file, $use->getLine());
+				throw new \Guardrail\Exceptions\UnknownTraitException($traitName, $this->file, $use->getLine());
 			}
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {

@@ -1,5 +1,5 @@
 <?php
-namespace Scan;
+namespace Guardrail;
 
 /* PHP arrays have a dual nature, they have an implicit order of insertion
  * and they have efficient key=>value lookup.  We leverage this here to

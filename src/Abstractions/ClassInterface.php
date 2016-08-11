@@ -1,5 +1,5 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 
 interface ClassInterface {

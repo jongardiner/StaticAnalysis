@@ -1,16 +1,16 @@
-<?php namespace Scan\NodeVisitors;
+<?php namespace Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverserInterface;
 use PhpParser\NodeVisitor;
-use Scan\Abstractions\FunctionLikeParameter;
-use Scan\Checks;
-use Scan\Output\OutputInterface;
-use Scan\Scope;
-use Scan\SymbolTable\SymbolTable;
+use Guardrail\Abstractions\FunctionLikeParameter;
+use Guardrail\Checks;
+use Guardrail\Output\OutputInterface;
+use Guardrail\Scope;
+use Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
-use Scan\TypeInferrer;
+use Guardrail\TypeInferrer;
 
 class StaticAnalyzer implements NodeVisitor {
 	/** @var  SymbolTable */
@@ -19,7 +19,7 @@ class StaticAnalyzer implements NodeVisitor {
 	/** @var string */
 	private $file;
 
-	/** @var Checks\BaseCheck[] */
+	/** @var \Guardrail\Checks\BaseCheck[] */
 	private $checks = [];
 
 	/** @var Class_[] */
@@ -35,23 +35,23 @@ class StaticAnalyzer implements NodeVisitor {
 		$this->scopeStack = [new Scope(true, true)];
 		$this->typeInferrer = new TypeInferrer($index);
 
-		/** @var Checks\BaseCheck[] $checkers */
+		/** @var \Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
-			new Checks\UndefinedVariableCheck($this->index, $output),
-			new Checks\ImpossibleInjectionCheck($this->index, $output),
-			new Checks\DefinedConstantCheck($this->index, $output),
-			new Checks\BacktickOperatorCheck($this->index, $output),
-			new Checks\PropertyFetch($this->index, $output),
-			new Checks\InterfaceCheck($this->index, $output),
-			new Checks\ParamTypesCheck($this->index, $output),
-			new Checks\StaticCallCheck($this->index, $output),
-			new Checks\InstantiationCheck($this->index, $output),
-			new Checks\InstanceOfCheck($this->index, $output),
-			new Checks\CatchCheck($this->index, $output),
-			new Checks\ClassConstantCheck($this->index, $output),
-			new Checks\FunctionCallCheck($this->index, $output),
-			new Checks\MethodCall($this->index, $output),
-			new Checks\SwitchCheck($this->index, $output)
+			new \Guardrail\Checks\UndefinedVariableCheck($this->index, $output),
+			new \Guardrail\Checks\ImpossibleInjectionCheck($this->index, $output),
+			new \Guardrail\Checks\DefinedConstantCheck($this->index, $output),
+			new \Guardrail\Checks\BacktickOperatorCheck($this->index, $output),
+			new \Guardrail\Checks\PropertyFetch($this->index, $output),
+			new \Guardrail\Checks\InterfaceCheck($this->index, $output),
+			new \Guardrail\Checks\ParamTypesCheck($this->index, $output),
+			new \Guardrail\Checks\StaticCallCheck($this->index, $output),
+			new \Guardrail\Checks\InstantiationCheck($this->index, $output),
+			new \Guardrail\Checks\InstanceOfCheck($this->index, $output),
+			new \Guardrail\Checks\CatchCheck($this->index, $output),
+			new \Guardrail\Checks\ClassConstantCheck($this->index, $output),
+			new \Guardrail\Checks\FunctionCallCheck($this->index, $output),
+			new \Guardrail\Checks\MethodCall($this->index, $output),
+			new \Guardrail\Checks\SwitchCheck($this->index, $output)
 		];
 
 

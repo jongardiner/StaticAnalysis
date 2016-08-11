@@ -1,5 +1,7 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
+
+use Guardrail\Abstractions\FunctionLikeParameter;
 
 interface FunctionLikeInterface {
 	/** @return FunctionLikeParameter[] */

@@ -1,8 +1,8 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 use PhpParser\Node\Stmt\Function_ as AstFunction;
-use Scan\NodeVisitors\VariadicCheckVisitor;
+use Guardrail\NodeVisitors\VariadicCheckVisitor;
 
 class Function_ implements FunctionLikeInterface {
 	private $function;
@@ -47,6 +47,7 @@ class Function_ implements FunctionLikeInterface {
 	function getStartingLine() {
 		return $this->function->getLine();
 	}
+
 
 	function isVariadic() {
 		foreach($this->function->getParams() as $param) {

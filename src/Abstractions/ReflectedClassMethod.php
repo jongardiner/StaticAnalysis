@@ -1,6 +1,9 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
+
+use Guardrail\Abstractions\FunctionLikeParameter;
+use Guardrail\Abstractions\MethodInterface;
 
 class ReflectedClassMethod implements MethodInterface {
 	private $refl;

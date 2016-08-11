@@ -112,17 +112,17 @@ class TestSwitchCheck extends \PHPUnit_Framework_TestCase {
 		';
 
 
-		$builder = $this->getMockBuilder(Scan\Output\OutputInterface::class);
+		$builder = $this->getMockBuilder(\Guardrail\Output\OutputInterface::class);
 		$output = $builder
 			->setMethods(["emitError"])
 			->getMockForAbstractClass();
 
 		$output->expects($this->never())->method("emitError");
 
-		$emptyTable = new \Scan\SymbolTable\InMemorySymbolTable(__DIR__);
+		$emptyTable = new \Guardrail\SymbolTable\InMemorySymbolTable(__DIR__);
 
 		$stmts = self::parseText($code);
-		$check = new \Scan\Checks\SwitchCheck($emptyTable, $output);
+		$check = new \Guardrail\Checks\SwitchCheck($emptyTable, $output);
 		$this->assertTrue($check->allBranchesExit( $stmts ) );
 	}
 

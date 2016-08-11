@@ -1,12 +1,13 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\ClassMethod;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Scope;
+use Guardrail\Util;
 use PhpParser\Node\Expr\Variable;
 
 

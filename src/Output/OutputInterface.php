@@ -1,6 +1,6 @@
 <?php
 
-namespace Scan\Output;
+namespace Guardrail\Output;
 
 use PhpParser\Node;
 

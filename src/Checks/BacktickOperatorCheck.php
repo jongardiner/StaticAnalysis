@@ -1,10 +1,11 @@
 <?php
 
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Checks\BaseCheck;
+use Guardrail\Scope;
+use Guardrail\Util;
 
 class BacktickOperatorCheck extends BaseCheck
 {

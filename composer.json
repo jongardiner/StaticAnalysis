@@ -1,6 +1,6 @@
 {
     "autoload": {
-        "psr-4": {"Scan\\": "src/"}
+        "psr-4": {"Guardrail\\": "src/"}
     },
     "require": {
       "nikic/php-parser": "^2.0",

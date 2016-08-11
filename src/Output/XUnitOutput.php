@@ -1,14 +1,15 @@
 <?php
 
-namespace Scan\Output;
+namespace Guardrail\Output;
 
+use Guardrail\Output\OutputInterface;
 use N98\JUnitXml;
 use PhpParser\Node;
 
 
 class XUnitOutput implements OutputInterface {
 
-	/** @var \Scan\Config  */
+	/** @var \Guardrail\Config  */
 	private $config;
 
 	/** @var JUnitXml\TestSuiteElement[] */
@@ -23,7 +24,9 @@ class XUnitOutput implements OutputInterface {
 
 	private $emitList = [];
 
-	function __construct(\Scan\Config $config) {
+	private $counts = [];
+
+	function __construct(\Guardrail\Config $config) {
 		$this->doc=new JUnitXml\Document();
 		$this->doc->formatOutput=true;
 		$this->config=$config;
@@ -69,6 +72,11 @@ class XUnitOutput implements OutputInterface {
 		if($this->emitErrors) {
 			echo "E";
 		}
+		if(!isset($this->counts[$name])) {
+			$this->counts[$name]=1;
+		} else {
+			++$this->counts[$name];
+		}
 		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
 
@@ -78,6 +86,10 @@ class XUnitOutput implements OutputInterface {
 		} else if($this->config->getOutputLevel()==2) {
 			echo $extraVerbose."\n";flush();
 		}
+	}
+
+	function getCounts() {
+		return $this->counts;
 	}
 
 	function outputVerbose($string) {

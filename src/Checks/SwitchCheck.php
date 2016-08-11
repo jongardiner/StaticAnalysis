@@ -1,5 +1,6 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -7,7 +8,7 @@ use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
-use Scan\Scope;
+use Guardrail\Scope;
 
 
 class SwitchCheck extends BaseCheck
@@ -46,7 +47,7 @@ class SwitchCheck extends BaseCheck
 			);
 	}
 
-	function allIfBranchesExit(\PhpParser\Node\Stmt\If_ $lastStatement) {
+	static function allIfBranchesExit(\PhpParser\Node\Stmt\If_ $lastStatement) {
 		if(!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
@@ -67,7 +68,7 @@ class SwitchCheck extends BaseCheck
 		return true;
 	}
 
-	function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
+	static function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
 		$hasDefault = false;
 		foreach($lastStatement->cases as $case) {
 			if(!$case->cond) {
@@ -90,7 +91,7 @@ class SwitchCheck extends BaseCheck
 	 * @param \PhpParser\Node\Stmt[] $stmts
 	 * @param $allowBreak
 	 */
-	function allBranchesExit(array $stmts) {
+	static function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 
 		if(!$lastStatement) {

@@ -1,15 +1,16 @@
 <?php
-namespace Scan\Phases;
+namespace Guardrail\Phases;
 
+use Guardrail\Output\XUnitOutput;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
-use Scan\Config;
-use Scan\NodeVisitors\TraitImportingVisitor;
-use Scan\Util;
-use Scan\NodeVisitors\StaticAnalyzer;
-use Scan\Output\OutputInterface;
+use Guardrail\Config;
+use Guardrail\NodeVisitors\TraitImportingVisitor;
+use Guardrail\Util;
+use Guardrail\NodeVisitors\StaticAnalyzer;
+use Guardrail\Output\OutputInterface;
 
 
 class AnalyzingPhase
@@ -56,10 +57,13 @@ class AnalyzingPhase
 				}
 			} catch (Error $e) {
 				$output->emitError( __CLASS__, $file, 0, "Parse error", $e->getMessage() );
-			} catch(\Scan\Exceptions\UnknownTraitException $e) {
+			} catch(\Guardrail\Exceptions\UnknownTraitException $e) {
 				$output->emitError( __CLASS__, $file, 0, "Unknown trait error", $e->getMessage() );
 			}
 
+		}
+		if($output instanceof XUnitOutput) {
+			print_r($output->getCounts());
 		}
 		return ($output->getErrorCount()>0 ? 1 : 0);
 	}
@@ -145,6 +149,7 @@ class AnalyzingPhase
 		$toProcess = ($config->getPartitionNumber() == $config->getPartitions())
 			? array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1))
 			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
+
 
 		$output->outputVerbose("Analyzing ".count($toProcess)." files\n");
 

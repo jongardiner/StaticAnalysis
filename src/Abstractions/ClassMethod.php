@@ -1,9 +1,11 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 use PhpParser\Node\Stmt\Function_ as ParserFunction;
-use Scan\NodeVisitors\VariadicCheckVisitor;
-use Scan\Util;
+use Guardrail\NodeVisitors\VariadicCheckVisitor;
+use Guardrail\Util;
+use Guardrail\Abstractions\FunctionLikeParameter;
+use Guardrail\Abstractions\MethodInterface;
 
 class ClassMethod implements MethodInterface {
 	private $method;

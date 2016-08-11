@@ -1,8 +1,9 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Scope;
+use Guardrail\Scope;
 
 class UndefinedVariableCheck extends BaseCheck
 {

@@ -1,4 +1,4 @@
-<?php namespace Scan\NodeVisitors;
+<?php namespace Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -8,16 +8,16 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitor;
-use Scan\Checks\BaseCheck;
+use Guardrail\Checks\BaseCheck;
 
 class SymbolTableIndexer implements NodeVisitor {
 	private $index;
 	private $classStack = [];
 	private $filename = "";
-	/** @var \Scan\Output\OutputInterface  */
+	/** @var \Guardrail\Output\OutputInterface  */
 	private $output;
 
-	function __construct( $index, \Scan\Output\OutputInterface $output) {
+	function __construct($index, \Guardrail\Output\OutputInterface $output) {
 		$this->index=$index;
 		$this->output=$output;
 	}

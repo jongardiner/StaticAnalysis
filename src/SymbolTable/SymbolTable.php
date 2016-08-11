@@ -1,8 +1,8 @@
 <?php
-namespace Scan\SymbolTable;
+namespace Guardrail\SymbolTable;
 
-use Scan\ObjectCache;
-use Scan\NodeVisitors\Grabber;
+use Guardrail\ObjectCache;
+use Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
@@ -66,18 +66,18 @@ abstract class SymbolTable  {
 
 	/**
 	 * @param $name
-	 * @return \Scan\Abstractions\Class_
+	 * @return \Guardrail\Abstractions\Class_
 	 */
 	function getAbstractedClass($name) {
 		$cacheName=strtolower($name);
 		$ob=$this->cache->get("AClass:".$cacheName);
 		$tmp = $this->getClassOrInterface($name);
 		if ($tmp) {
-			$ob=new \Scan\Abstractions\Class_($tmp);
+			$ob=new \Guardrail\Abstractions\Class_($tmp);
 		} else if(strpos($name,"\\")===false) {
 			try {
 				$refl = new \ReflectionClass($name);
-				$ob = new \Scan\Abstractions\ReflectedClass($refl);
+				$ob = new \Guardrail\Abstractions\ReflectedClass($refl);
 			} catch (\ReflectionException $e) {
 				$ob=null;
 			}
@@ -91,11 +91,11 @@ abstract class SymbolTable  {
 	function getAbstractedMethod($className, $methodName) {
 		$cacheName=strtolower($className."::".$methodName);
 		$ob=$this->cache->get("AClass:".$cacheName);
-		$ob = \Scan\Util::findAbstractedMethod($className, $methodName, $this);
+		$ob = \Guardrail\Util::findAbstractedMethod($className, $methodName, $this);
 		if (!$ob && strpos($className,"\\")===false) {
 			try {
 				$refl = new \ReflectionMethod($className, $methodName);
-				$ob = new \Scan\Abstractions\ReflectedClassMethod($refl);
+				$ob = new \Guardrail\Abstractions\ReflectedClassMethod($refl);
 			} catch (\ReflectionException $e) {
 				$ob=null;
 			}
@@ -109,11 +109,11 @@ abstract class SymbolTable  {
 	function getAbstractedFunction($name) {
 		$func = $this->getFunction($name);
 		if($func) {
-			$ob= new \Scan\Abstractions\Function_($func);
+			$ob= new \Guardrail\Abstractions\Function_($func);
 		} else {
 			try {
 				$refl = new \ReflectionFunction($name);
-				$ob = new \Scan\Abstractions\ReflectedFunction($refl);
+				$ob = new \Guardrail\Abstractions\ReflectedFunction($refl);
 			}
 			catch(\ReflectionException $e) {
 				$ob = null;

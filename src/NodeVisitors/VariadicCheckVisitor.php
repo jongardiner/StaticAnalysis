@@ -1,4 +1,4 @@
-<?php namespace Scan\NodeVisitors;
+<?php namespace Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverserInterface;

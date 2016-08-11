@@ -1,12 +1,13 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Param;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Scope;
+use Guardrail\Util;
 
 class StaticCallCheck extends BaseCheck
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
 use N98\JUnitXml;
 use PhpParser\Node;
-use Scan\Scope;
-use Scan\SymbolTable\SymbolTable;
-use Scan\Output\OutputInterface;
+use Guardrail\Scope;
+use Guardrail\SymbolTable\SymbolTable;
+use Guardrail\Output\OutputInterface;
 
 abstract class BaseCheck {
 	const TYPE_SECURITY_BACKTICK="Standard.Security.Backtick";
@@ -37,7 +37,7 @@ abstract class BaseCheck {
 	/** @var SymbolTable */
 	protected $symbolTable;
 
-	/** @var \Scan\Output\OutputInterface  */
+	/** @var \Guardrail\Output\OutputInterface  */
 	private $doc;
 
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {

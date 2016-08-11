@@ -1,4 +1,4 @@
-<?php namespace Scan\SymbolTable;
+<?php namespace Guardrail\SymbolTable;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
+use Guardrail\SymbolTable\SymbolTable;
 
 class InMemorySymbolTable extends SymbolTable {
 	private $classes = [];

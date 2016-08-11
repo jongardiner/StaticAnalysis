@@ -1,15 +1,15 @@
 <?php
 
-namespace Scan\Phases;
+namespace Guardrail\Phases;
 
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
-use Scan\NodeVisitors\SymbolTableIndexer;
-use Scan\Util;
-use Scan\Config;
-use Scan\Output\OutputInterface;
+use Guardrail\NodeVisitors\SymbolTableIndexer;
+use Guardrail\Util;
+use Guardrail\Config;
+use Guardrail\Output\OutputInterface;
 
 
 class IndexingPhase

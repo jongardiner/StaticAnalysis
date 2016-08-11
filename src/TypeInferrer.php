@@ -1,8 +1,10 @@
 <?php
-namespace Scan;
+namespace Guardrail;
 
+use Guardrail\Scope;
 use PhpParser\Node;
-use Scan\SymbolTable\SymbolTable;
+use Guardrail\SymbolTable\SymbolTable;
+use Guardrail\Util;
 
 
 class TypeInferrer

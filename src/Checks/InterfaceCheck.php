@@ -1,18 +1,21 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Abstractions\ClassInterface;
+use Guardrail\Abstractions\ClassMethod;
+use Guardrail\Abstractions\MethodInterface;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Class_;
-use Scan\Abstractions\FunctionLikeParameter;
-use Scan\Scope;
-use Scan\Util;
+use Guardrail\Abstractions\FunctionLikeParameter;
+use Guardrail\Scope;
+use Guardrail\Util;
 
 class InterfaceCheck extends BaseCheck {
 	function getCheckNodeTypes() {
 		return [\PhpParser\Node\Stmt\Class_::class];
 	}
 
-	protected function checkMethod(Class_ $class, \Scan\Abstractions\ClassMethod $method, \Scan\Abstractions\ClassInterface $parentClass, \Scan\Abstractions\FunctionLikeInterface $parentMethod) {
+	protected function checkMethod(Class_ $class, ClassMethod $method, ClassInterface $parentClass, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
@@ -64,7 +67,7 @@ class InterfaceCheck extends BaseCheck {
 	}
 
 	protected function implementsMethod( $fileName, Class_ $node, $interfaceMethod) {
-		$current = new \Scan\Abstractions\Class_($node);
+		$current = new \Guardrail\Abstractions\Class_($node);
 		while (true) {
 			// Is it directly in the class
 			$classMethod = $current->getMethod($interfaceMethod);
@@ -117,7 +120,7 @@ class InterfaceCheck extends BaseCheck {
 		}
 
 		if($node->extends) {
-			$class = new \Scan\Abstractions\Class_($node);
+			$class = new \Guardrail\Abstractions\Class_($node);
 			$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 			if(!$parentClass) {
 				$this->emitError($fileName,$node->extends,self::TYPE_UNKNOWN_CLASS, "Unable to find parent ".$node->extends);

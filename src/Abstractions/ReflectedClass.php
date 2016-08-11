@@ -1,5 +1,8 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
+
+use Guardrail\Abstractions\ClassInterface;
+use Guardrail\Abstractions\ReflectedClassMethod;
 
 class ReflectedClass implements ClassInterface {
 	/**

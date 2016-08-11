@@ -1,5 +1,5 @@
 <?php
-namespace Scan\Exceptions;
+namespace Guardrail\Exceptions;
 
 class UnknownTraitException extends \Exception {
 

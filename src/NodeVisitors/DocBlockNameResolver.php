@@ -1,6 +1,6 @@
 <?php
 
-namespace Scan\NodeVisitors;
+namespace Guardrail\NodeVisitors;
 
 
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
@@ -10,7 +10,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeVisitor\NameResolver;
-use Scan\Abstractions\ClassMethod;
+use Guardrail\Abstractions\ClassMethod;
 
 class DocBlockNameResolver extends NameResolver
 {
@@ -98,7 +98,7 @@ class DocBlockNameResolver extends NameResolver
 					$returnType = $return[0]->getType();
 					$types = explode("|", $returnType);
 					if(count($types)>1) {
-						$node->setAttribute("namespacedReturn", \Scan\Scope::MIXED_TYPE);
+						$node->setAttribute("namespacedReturn", \Guardrail\Scope::MIXED_TYPE);
 					} else {
 						foreach ($types as $type) {
 							if($type[0]=='\\') {

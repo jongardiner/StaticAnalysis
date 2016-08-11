@@ -1,13 +1,14 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
-use Scan\NodeVisitors\Grabber;
+use Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Name;
-use Scan\Scope;
+use Guardrail\Scope;
 
 class ClassConstantCheck extends BaseCheck {
 
@@ -20,7 +21,7 @@ class ClassConstantCheck extends BaseCheck {
 	 * @param string    $constantName
 	 * @return ClassConst
 	 */
-	function findConstant(\Scan\Abstractions\ClassInterface $class, $constantName) {
+	function findConstant(\Guardrail\Abstractions\ClassInterface $class, $constantName) {
 		if($class->hasConstant($constantName)) {
 			return true;
 		}

@@ -1,5 +1,7 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
+
+use Guardrail\Abstractions\FunctionLikeInterface;
 
 interface MethodInterface extends FunctionLikeInterface {
 	function isAbstract();

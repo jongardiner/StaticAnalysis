@@ -1,10 +1,11 @@
 <?php
-namespace Scan\Checks;
+namespace Guardrail\Checks;
 
+use Guardrail\Checks\BaseCheck;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use Scan\Scope;
+use Guardrail\Scope;
 
 class InstanceOfCheck extends BaseCheck
 {

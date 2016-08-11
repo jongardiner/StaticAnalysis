@@ -1,7 +1,10 @@
 <?php
 
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
+
+use Guardrail\Abstractions\FunctionLikeInterface;
+use Guardrail\Abstractions\FunctionLikeParameter;
 
 class ReflectedFunction implements FunctionLikeInterface {
 	private $refl;

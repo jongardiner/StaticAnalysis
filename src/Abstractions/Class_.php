@@ -1,9 +1,11 @@
 <?php
-namespace Scan\Abstractions;
+namespace Guardrail\Abstractions;
 
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Interface_;
-use Scan\NodeVisitors\Grabber;
+use Guardrail\NodeVisitors\Grabber;
+use Guardrail\Abstractions\ClassInterface;
+use Guardrail\Abstractions\ClassMethod;
 
 class Class_ implements ClassInterface {
 	private $class;
