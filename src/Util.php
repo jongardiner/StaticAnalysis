@@ -101,6 +101,27 @@ class Util {
 		return null;
 	}
 
+	static function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if(!$class) {
+				return null;
+			}
+
+			$method = $class->getMethod($name);
+			if($method) {
+				return $method;
+			}
+			foreach($class->getInterfaceNames() as $interfaceName) {
+				$method = self::findAbstractedSignature($interfaceName, $name, $symbolTable);
+				if($method) {
+					return $method;
+				}
+			}
+			$className=$class->getParentClassName();
+		}
+		return null;
+	}
 
 
 	/**

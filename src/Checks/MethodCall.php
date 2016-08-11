@@ -58,7 +58,7 @@ class MethodCall extends BaseCheck
 				return;
 			}
 			//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
-			$method = Util::findAbstractedMethod( $className, $methodName, $this->symbolTable);
+			$method = Util::findAbstractedSignature( $className, $methodName, $this->symbolTable);
 			if ($method) {
 				$this->checkMethod($fileName, $node, $className, $scope, $method);
 			} else {
