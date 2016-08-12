@@ -8,6 +8,7 @@ interface FunctionLikeInterface {
 	function getParameters();
 	function getMinimumRequiredParameters();
 	function getReturnType();
+	function getDocBlockReturnType();
 	function isInternal();
 
 

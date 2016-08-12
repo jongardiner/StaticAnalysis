@@ -14,8 +14,11 @@ class ClassMethod implements MethodInterface {
 		$this->method = $method;
 	}
 	function getReturnType() {
-		$type = $this->method->getAttribute("namespacedReturn");
-		return ($type?$type:"");
+		return strval($this->method->returnType);
+	}
+
+	function getDocBlockReturnType() {
+		return $this->method->getAttribute('namespacedReturn');
 	}
 
 	function getMinimumRequiredParameters() {

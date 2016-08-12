@@ -5,13 +5,19 @@ use PhpParser\Node\Stmt\Function_ as AstFunction;
 use Guardrail\NodeVisitors\VariadicCheckVisitor;
 
 class Function_ implements FunctionLikeInterface {
+	/** @var AstFunction */
 	private $function;
 
 	function __construct(AstFunction $method) {
 		$this->function = $method;
 	}
 	function getReturnType() {
-		return "";
+		return strval($this->function->returnType);
+	}
+
+
+	function getDocBlockReturnType() {
+		return $this->function->getAttribute('namespacedReturn');
 	}
 
 	function getMinimumRequiredParameters() {

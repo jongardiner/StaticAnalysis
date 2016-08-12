@@ -1,6 +1,7 @@
 <?php
 namespace Guardrail\Phases;
 
+use Guardrail\NodeVisitors\DocBlockNameResolver;
 use Guardrail\Output\XUnitOutput;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
@@ -30,7 +31,7 @@ class AnalyzingPhase
 	function phase2(Config $config, OutputInterface $output, $toProcess) {
 
 		$traverser1 = new NodeTraverser;
-		$traverser1->addVisitor(new NameResolver());
+		$traverser1->addVisitor(new DocBlockNameResolver());
 		$analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
 
 		$traverser2 = new NodeTraverser();
@@ -63,7 +64,7 @@ class AnalyzingPhase
 
 		}
 		if($output instanceof XUnitOutput) {
-			print_r($output->getCounts());
+		//	print_r($output->getCounts());
 		}
 		return ($output->getErrorCount()>0 ? 1 : 0);
 	}

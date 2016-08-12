@@ -16,7 +16,7 @@ class DocBlockNameResolver extends NameResolver
 {
 	private $factory;
 	private $classAliases=[];
-	private $useDocBlock = false;
+	private $useDocBlock = true;
 
 	function __construct() {
 		$this->factory  = \phpDocumentor\Reflection\DocBlockFactory::createInstance();
@@ -40,7 +40,7 @@ class DocBlockNameResolver extends NameResolver
 	function enterNode(\PhpParser\Node $node) {
 		if($this->useDocBlock) {
 			if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
-				//$this->importReturnValue($node);
+				$this->importReturnValue($node);
 			}
 			if ($node instanceof Property) {
 				$this->importVarType($node);
@@ -59,9 +59,7 @@ class DocBlockNameResolver extends NameResolver
 		$comment = $prop->getDocComment();
 		if($comment) {
 			$str = $comment->getText();
-
 			if(count($prop->props)>=1) {
-				$property=$prop->props[0];
 				try {
 					$docBlock = $this->factory->create($str, $this->getDocBlockContext());
 
@@ -74,7 +72,7 @@ class DocBlockNameResolver extends NameResolver
 							if ($type[0] == '\\') {
 								$type=substr($type,1);
 							}
-							$property->setAttribute("namespacedType", $type);
+							$prop->props[0]->setAttribute("namespacedType", strval($type));
 						}
 					}
 				} catch (\InvalidArgumentException $e) {
@@ -103,8 +101,8 @@ class DocBlockNameResolver extends NameResolver
 						foreach ($types as $type) {
 							if($type[0]=='\\') {
 								$type=substr($type,1);
-								$node->setAttribute("namespacedReturn", $type);
 							}
+							$node->setAttribute("namespacedReturn", strval($type));
 							return;
 						}
 					}

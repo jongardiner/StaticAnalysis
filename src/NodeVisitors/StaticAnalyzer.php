@@ -37,6 +37,7 @@ class StaticAnalyzer implements NodeVisitor {
 
 		/** @var \Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
+			new \Guardrail\Checks\DocBlockTypesCheck($this->index, $output),
 			new \Guardrail\Checks\UndefinedVariableCheck($this->index, $output),
 			new \Guardrail\Checks\ImpossibleInjectionCheck($this->index, $output),
 			new \Guardrail\Checks\DefinedConstantCheck($this->index, $output),

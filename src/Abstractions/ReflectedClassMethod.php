@@ -24,6 +24,10 @@ class ReflectedClassMethod implements MethodInterface {
 		return "";
 	}
 
+	function getDocBlockReturnType() {
+		return "";
+	}
+
 	function isAbstract() {
 		return $this->refl->isAbstract();
 	}

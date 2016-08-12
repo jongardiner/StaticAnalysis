@@ -29,6 +29,10 @@ class ReflectedFunction implements FunctionLikeInterface {
 		return $this->refl->isAbstract();
 	}
 
+	function getDocBlockReturnType() {
+		return "";
+	}
+
 	function getAccessLevel() {
 		if($this->refl->isPrivate()) return "private";
 		if($this->refl->isPublic()) return "public";

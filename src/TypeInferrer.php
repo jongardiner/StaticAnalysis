@@ -48,10 +48,11 @@ class TypeInferrer
 			return "callable";
 		} else if ($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name) {
 			$func = $this->index->getFunction($expr->name);
+			/*
 			if($func) {
 				$namespacedReturn =$func->getAttribute("namespacedReturn");
 				return $namespacedReturn ?: Scope::MIXED_TYPE;
-			}
+			}*/
 		} else if( $expr instanceof Node\Expr\MethodCall && gettype($expr->name)=="string") {
 			$class = $this->inferType($inside, $expr->var, $scope);
 			if(!empty($class) && $class[0]!="!") {
@@ -61,6 +62,12 @@ class TypeInferrer
 					if($type) {
 						return $type;
 					}
+					/*
+					$type = $method->getDocBlockReturnType();
+					if($type) {
+						return $type;
+					}
+					*/
 				}
 			}
 		} else if( $expr instanceof Node\Expr\PropertyFetch ) {
@@ -82,13 +89,14 @@ class TypeInferrer
 				if($classDef) {
 					$prop = Util::findProperty($classDef, strval($expr->name), $this->index );
 					if($prop) {
+						/*
 						$type = $prop->getAttribute("namespacedType") ?: "";
 						if(!empty($type)) {
 							if($type[0]=='\\') {
 								$type=substr($type,1);
 							}
 							return $type;
-						}
+						}*/
 					}
 				}
 			}
