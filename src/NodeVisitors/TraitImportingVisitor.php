@@ -105,10 +105,12 @@ class TraitImportingVisitor implements NodeVisitor {
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
 					foreach($stmt->props as $prop) {
-						$properties[$prop->name] = clone $prop;
+						// Make a deep copy of the node
+						$properties[$prop->name] = unserialize( serialize( $prop ) );
 					}
 				} else if($stmt instanceof Node\Stmt\ClassMethod) {
-					$methods[$stmt->name][$traitName] = clone $stmt;
+					// Make a deep copy of the node
+					$methods[$stmt->name][$traitName] = unserialize( serialize( $stmt ) );
 				}
 			}
 		}

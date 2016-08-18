@@ -14,7 +14,7 @@ class Class_ implements ClassInterface {
 		$this->class = $class;
 	}
 	function getName() {
-		return $this->class->name;
+		return strval($this->class->namespacedName);
 	}
 
 	function isDeclaredAbstract() {

@@ -71,37 +71,41 @@ abstract class SymbolTable  {
 	function getAbstractedClass($name) {
 		$cacheName=strtolower($name);
 		$ob=$this->cache->get("AClass:".$cacheName);
-		$tmp = $this->getClassOrInterface($name);
-		if ($tmp) {
-			$ob=new \Guardrail\Abstractions\Class_($tmp);
-		} else if(strpos($name,"\\")===false) {
-			try {
-				$refl = new \ReflectionClass($name);
-				$ob = new \Guardrail\Abstractions\ReflectedClass($refl);
-			} catch (\ReflectionException $e) {
-				$ob=null;
+		if(!$ob) {
+			$tmp = $this->getClassOrInterface($name);
+			if ($tmp) {
+				$ob = new \Guardrail\Abstractions\Class_($tmp);
+			} else if (strpos($name, "\\") === false) {
+				try {
+					$refl = new \ReflectionClass($name);
+					$ob = new \Guardrail\Abstractions\ReflectedClass($refl);
+				} catch (\ReflectionException $e) {
+					$ob = null;
+				}
 			}
-		}
-		if($ob) {
-			$this->cache->add("AClass:".$cacheName, $ob);
+			if ($ob) {
+				$this->cache->add("AClass:" . $cacheName, $ob);
+			}
 		}
 		return $ob;
 	}
 
 	function getAbstractedMethod($className, $methodName) {
 		$cacheName=strtolower($className."::".$methodName);
-		$ob=$this->cache->get("AClass:".$cacheName);
-		$ob = \Guardrail\Util::findAbstractedMethod($className, $methodName, $this);
-		if (!$ob && strpos($className,"\\")===false) {
-			try {
-				$refl = new \ReflectionMethod($className, $methodName);
-				$ob = new \Guardrail\Abstractions\ReflectedClassMethod($refl);
-			} catch (\ReflectionException $e) {
-				$ob=null;
+		$ob=$this->cache->get("AClassMethod:".$cacheName);
+		if(!$ob) {
+			$ob = \Guardrail\Util::findAbstractedMethod($className, $methodName, $this);
+			if (!$ob && strpos($className, "\\") === false) {
+				try {
+					$refl = new \ReflectionMethod($className, $methodName);
+					$ob = new \Guardrail\Abstractions\ReflectedClassMethod($refl);
+				} catch (\ReflectionException $e) {
+					$ob = null;
+				}
 			}
-		}
-		if($ob) {
-			$this->cache->add("AClass:".$cacheName, $ob);
+			if ($ob) {
+				$this->cache->add("AClassMethod:" . $cacheName, $ob);
+			}
 		}
 		return $ob;
 	}
@@ -188,29 +192,6 @@ abstract class SymbolTable  {
 			}
 		}
 		return $ob;
-	}
-
-	function getClassMethod($className, $methodName) {
-		$classMethods = $this->getClassMethods($className);
-		foreach($classMethods as $method) {
-			if(strcasecmp($method->name,$methodName)==0) {
-				return $method;
-			}
-		}
-		return null;
-	}
-
-	function getClassMethods($className) {
-		$ret = [];
-		$class = $this->getClass($className);
-		if($class && is_array($class->stmts)) {
-			foreach( $class->stmts as $stmt) {
-				if ($stmt instanceof ClassMethod) {
-					$ret[] = $stmt;
-				}
-			}
-		}
-		return $ret;
 	}
 
 	function getClassOrInterface($name) {
