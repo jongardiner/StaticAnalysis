@@ -20,6 +20,16 @@ function newrelic_name_transaction($name) { }
 function apache_note($name,$value="") { }
 function apache_request_headers() { }
 
+class Memcache {
+	function connnect($host, $port=-1, $timeout=-1) { }
+	function set($key,$var, $flag=0, $expire=0) { }
+	function add($key,$var, $flag=0, $expire=0) { }
+	function get($key) { }
+	function delete($key) { }
+	function increment($key, $value=1) { }
+	function decrement($key, $value = 1) { }
+}
+
 /*
  *
 interface Traversable {
