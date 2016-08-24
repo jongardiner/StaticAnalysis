@@ -23,7 +23,7 @@ class IndexingPhase
 		$traverser1->addVisitor(new NameResolver());
 		$traverser2 = new NodeTraverser;
 		$traverser2->addVisitor($indexer);
-		$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
+		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 
 		$configArr = $config->getConfigArray();
 

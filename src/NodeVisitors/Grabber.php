@@ -97,7 +97,7 @@ class Grabber implements NodeVisitor {
 			$stmts = $lastContents;
 		} else {
 			$contents = file_get_contents($fileName);
-			$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
+			$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 			try {
 				$stmts = $parser->parse($contents);
 			} catch(Error $error) {

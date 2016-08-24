@@ -40,7 +40,7 @@ class AnalyzingPhase
 		$traverser3 = new NodeTraverser;
 		$traverser3->addVisitor($analyzer);
 
-		$parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP5);
+		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 		$processingCount = 0;
 		foreach ($toProcess as $file) {
 			try {

@@ -14,6 +14,15 @@ class Util {
 		return property_exists($parts,"parts") && is_array($parts->parts) ? $parts->parts[ count($parts->parts)-1 ] : $parts;
 	}
 
+	static function isScalarType($name) {
+		$name=strtolower($name);
+		return $name=='bool' || $name=='string' || $name=='int' || $name=='float';
+	}
+
+	static function isLegalNonObject($name) {
+		return Util::isScalarType($name) || strcasecmp($name,"callable")==0 || strcasecmp($name,"array")==0;
+	}
+
 	static function methodSignatureString(ClassMethod $method) {
 		$ret = [];
 		foreach($method->params as $param) {

@@ -200,7 +200,7 @@ abstract class SymbolTable  {
 
 	function ignoreType($name) {
 		$name=strtolower($name);
-		return $name=='exception' || $name=='stdclass' || $name=='iterator';
+		return ($name=='exception' || $name=='stdclass' || $name=='iterator');
 	}
 
 	abstract function addClass($name, Class_ $class, $file);
