@@ -33,7 +33,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 			array_push($used, strval($className));
 			$dependencies = $this->getConstructorDependencies($className);
 			if (count($dependencies) == 0) {
-				return true;
+				throw new ImpossibleInjectionException("Constructor for $className does not take any parameters.");
 			}
 
 			foreach ($dependencies as $dependencyName) {
@@ -63,8 +63,10 @@ class ImpossibleInjectionCheck extends BaseCheck
 	function getConstructorDependencies($className) {
 		$method = Util::findAbstractedMethod($className, "__construct", $this->symbolTable);
 		$dependencies = [];
-		foreach ($method->getParameters() as $param) {
-			$dependencies[] = $param->getType();
+		if($method) {
+			foreach ($method->getParameters() as $param) {
+				$dependencies[] = $param->getType();
+			}
 		}
 		return $dependencies;
 	}
