@@ -33,6 +33,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 			array_push($used, strval($className));
 			$dependencies = $this->getConstructorDependencies($className);
 			if (count($dependencies) == 0) {
+				return true;
 				throw new ImpossibleInjectionException("Constructor for $className does not take any parameters.");
 			}
 
