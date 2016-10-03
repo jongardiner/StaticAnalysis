@@ -21,13 +21,45 @@ class ImpossibleInjectionCheck extends BaseCheck
 		return in_array($name, $types);
 	}
 
-	function isInjectable($className, $available, $used = []) {
+	static private function getInjectableDependencies() {
+		static $arr = [
+			\Memcache::class                     => [],
+			\BambooHR\Domain\DB\CommonDb::class  => [],
+			\BambooHR\Domain\DB\MainDB::class    => [],
+			\Company::class                      => [\Db::class],
+			\BambooHR\Domain\DB\CompanyDb::class => [\Db::class],
+			\CompanyMemcache::class              => [\Company::class],
+			\CompanyMaster::class                => [\Company::class],
+			\BambooHR\Repository\BLocale::class  => [\BLocale::class]
+		];
+		return $arr;
+	}
+
+	function isAutoInjectable( $className, $available) {
+		$deps = self::getInjectableDependencies();
+		if(array_key_exists($className, $deps)) {
+			if(count($deps[$className])>0) {
+				foreach($deps[$className] as $dependency) {
+					if(
+						!in_array($dependency, $available) &&
+						!$this->isAutoInjectable($dependency, $available)
+					) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	function isInjectable($className, $available, $autoMode, $used = []) {
 		if (in_array($className, $used)) {
 			// We've detected a loop.  Therefore, this is not injectable.
 
 			throw new ImpossibleInjectionException("Dependency loop detected trying to inject $className\n");
 		}
-		if (in_array($className, $available)) {
+		if (in_array($className, $available) || ($autoMode && $this->isAutoInjectable($className, $available))) {
 			return true;
 		} else {
 			array_push($used, strval($className));
@@ -51,8 +83,8 @@ class ImpossibleInjectionCheck extends BaseCheck
 				if ($class->isInterface() && !in_array($className, $available)) {
 					throw new ImpossibleInjectionException("Interface $className is not available");
 				}
-				if (!$this->isInjectable($dependencyName, $available, $used)) {
 
+				if (!$this->isInjectable($dependencyName, $available, $autoMode, $used)) {
 					// Something else will throw an exception, so we don't need to in the recursive case.
 					return false;
 				}
@@ -66,7 +98,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 		$dependencies = [];
 		if($method) {
 			foreach ($method->getParameters() as $param) {
-				$dependencies[] = $param->getType();
+				$dependencies[] = strval($param->getType());
 			}
 		}
 		return $dependencies;
@@ -84,7 +116,8 @@ class ImpossibleInjectionCheck extends BaseCheck
 
 			$toLower = strtolower($name);
 			$this->incTests();
-			if ($toLower == 'inject') {
+			if ($toLower == 'inject' || $toLower=='autoinject') {
+				$autoMode = $toLower=='autoinject';
 				if (count($node->args) == 2) {
 					$name = $node->args[0]->value;
 					$classes = $node->args[1]->value;
@@ -95,7 +128,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 						$classes instanceof Array_
 
 					) {
-						$nameString = $name->class;
+						$nameString = strval($name->class);
 						$availableObjects = $classes->items;
 						$available = [];
 						foreach ($availableObjects as $item) {
@@ -108,7 +141,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 							}
 						}
 						try {
-							if (!$this->isInjectable($nameString, $available)) {
+							if (!$this->isInjectable($nameString, $available, $autoMode)) {
 								$this->emitError($fileName, $node, "BambooHR.Impossible.Inject", "Impossible call to inject() for $nameString:");
 							}
 						} catch (ImpossibleInjectionException $ex) {
