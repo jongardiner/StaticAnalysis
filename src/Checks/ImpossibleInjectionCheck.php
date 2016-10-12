@@ -26,14 +26,21 @@ class ImpossibleInjectionCheck extends BaseCheck
 			\Memcache::class                     => [],
 			\BambooHR\Domain\DB\CommonDb::class  => [],
 			\BambooHR\Domain\DB\MainDB::class    => [],
-			\Company::class                      => [\Db::class],
-			\BambooHR\Domain\DB\CompanyDb::class => [\Db::class],
+			\Company::class                      => [\BambooHR\Domain\DB\CompanyDb::class],
 			\CompanyMemcache::class              => [\Company::class],
 			\CompanyMaster::class                => [\Company::class],
 			\BambooHR\Repository\BLocale::class  => [\BLocale::class]
 		];
 		return $arr;
 	}
+
+	// These don't take parameters, but they still can't be instantiated directly.
+	static $injectionBlackList = [
+		\Company::class,
+		\Memcache::class,
+		\DB::class,
+	];
+
 
 	function isAutoInjectable( $className, $available) {
 		$deps = self::getInjectableDependencies();
@@ -64,14 +71,21 @@ class ImpossibleInjectionCheck extends BaseCheck
 		} else {
 			array_push($used, strval($className));
 			$dependencies = $this->getConstructorDependencies($className);
-			if (count($dependencies) == 0) {
-				return true;
-				throw new ImpossibleInjectionException("Constructor for $className does not take any parameters.");
+			if (count($dependencies) == 0 && in_array($className, self::$injectionBlackList)) {
+				throw new ImpossibleInjectionException("$className is explicitly required here.  Please pass an instance");
 			}
 
 			foreach ($dependencies as $dependencyName) {
+				$dependencyName = strval($dependencyName);
 				if (empty($dependencyName) || self::isNonClass($dependencyName)) {
-					throw new ImpossibleInjectionException("Constructor for $className doesn't type hint a parameter");
+					if($autoMode && $this->isAutoInjectable($dependencyName, $available)) {
+						continue;
+					} else {
+						throw new ImpossibleInjectionException("Constructor for $className doesn't type hint a parameter");
+					}
+				}
+				if(strcasecmp($dependencyName,'DB')==0) {
+					throw new ImpossibleInjectionException("$className is uninjectable because it requires a DB instead of a CompanyDb");
 				}
 				$class = $this->symbolTable->getAbstractedClass($dependencyName);
 				if (!$class) {
