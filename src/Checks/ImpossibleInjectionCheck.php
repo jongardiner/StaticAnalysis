@@ -41,9 +41,16 @@ class ImpossibleInjectionCheck extends BaseCheck
 		\DB::class,
 	];
 
+	// These will be associated with some class or another.  We just trust that they will inject correctly.
+	static $knownBoundInstances = [
+		\BambooHR\Common\DataObjects\AuthenticatedUser::class => true,
+		\BambooHR\Controller\ClientState\PermissionsClientStateInterface::class => true
+	];
+
 
 	function isAutoInjectable( $className, $available) {
 		$deps = self::getInjectableDependencies();
+
 		if(array_key_exists($className, $deps)) {
 			if(count($deps[$className])>0) {
 				foreach($deps[$className] as $dependency) {
@@ -65,6 +72,9 @@ class ImpossibleInjectionCheck extends BaseCheck
 			// We've detected a loop.  Therefore, this is not injectable.
 
 			throw new ImpossibleInjectionException("Dependency loop detected trying to inject $className\n");
+		}
+		if(array_key_exists($className, self::$knownBoundInstances)) {
+			return true;
 		}
 		if (in_array($className, $available) || ($autoMode && $this->isAutoInjectable($className, $available))) {
 			return true;
