@@ -49,6 +49,9 @@ class ImpossibleInjectionCheck extends BaseCheck
 
 
 	function isAutoInjectable( $className, $available) {
+		if(array_key_exists($className, self::$knownBoundInstances)) {
+			return true;
+		}
 		$deps = self::getInjectableDependencies();
 
 		if(array_key_exists($className, $deps)) {
@@ -73,9 +76,7 @@ class ImpossibleInjectionCheck extends BaseCheck
 
 			throw new ImpossibleInjectionException("Dependency loop detected trying to inject $className\n");
 		}
-		if(array_key_exists($className, self::$knownBoundInstances)) {
-			return true;
-		}
+
 		if (in_array($className, $available) || ($autoMode && $this->isAutoInjectable($className, $available))) {
 			return true;
 		} else {
@@ -101,10 +102,10 @@ class ImpossibleInjectionCheck extends BaseCheck
 				if (!$class) {
 					throw new ImpossibleInjectionException("Unknown class");
 				}
-				if ($class->isDeclaredAbstract() && !in_array($className, $available)) {
+				if ($class->isDeclaredAbstract() && !in_array($dependencyName, $available)) {
 					throw new ImpossibleInjectionException("Abstract class $className is not available");
 				}
-				if ($class->isInterface() && !in_array($className, $available)) {
+				if ($class->isInterface() && !in_array($dependencyName, $available) && (!$autoMode || !array_key_exists($dependencyName, self::$knownBoundInstances))) {
 					throw new ImpossibleInjectionException("Interface $className is not available");
 				}
 
