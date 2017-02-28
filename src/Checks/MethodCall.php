@@ -96,13 +96,20 @@ class MethodCall extends BaseCheck
 
 		foreach ($node->args as $index => $arg) {
 
-			if ($scope && $arg->value instanceof \PhpParser\Node\Expr\Variable && $index < count($params) && $params[$index]->getType()!="") {
+			if($scope && $arg->value instanceof \PhpParser\Node\Expr\Variable && $index < count($params) ) {
 				$variableName = $arg->value->name;
 				$type = $scope->getVarType($variableName);
-				$expectedType = $params[$index]->getType();
-
-				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-					$this->emitError($fileName, $node, self::TYPE_SIGNATURE_TYPE, "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+				if($arg->unpack) {
+					// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
+					if(strcasecmp($type,"array")!=0 && $type!=Scope::UNDEFINED && $type!=Scope::MIXED_TYPE) {
+						$this->emitError($fileName, $node, self::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array.  Passing $type from \$$variableName.");
+					}
+				} else  if ($params[$index]->getType()!="") {
+					// They called with a simple $foo, see if the $type for Foo matches
+					$expectedType = $params[$index]->getType();
+					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type!="" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
+						$this->emitError($fileName, $node, self::TYPE_SIGNATURE_TYPE, "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+					}
 				}
 			}
 		}

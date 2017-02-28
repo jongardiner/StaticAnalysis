@@ -251,7 +251,12 @@ class StaticAnalyzer implements NodeVisitor {
 		}
 		$scope = new Scope( $isStatic );
 		foreach ($func->getParams() as $param) {
-			$scope->setVarType(strval($param->name), strval($param->type));
+			if($param->variadic) {
+				// TODO: Track the type of a variadic array
+				$scope->setVarType(strval($param->name), 'array');
+			} else {
+				$scope->setVarType(strval($param->name), strval($param->type));
+			}
 		}
 		if($func instanceof Node\Expr\Closure) {
 			$oldScope=end($this->scopeStack);
