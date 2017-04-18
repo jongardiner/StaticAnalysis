@@ -29,7 +29,9 @@ class ImpossibleInjectionCheck extends BaseCheck
 			\Company::class                      => [\BambooHR\Domain\DB\CompanyDb::class],
 			\CompanyMemcache::class              => [\Company::class],
 			\CompanyMaster::class                => [\Company::class],
-			\BambooHR\Repository\BLocale::class  => [\BLocale::class]
+			\BambooHR\Repository\BLocale::class  => [\BLocale::class],
+			AuthenticatedUser::class              => [],
+			\BambooHR\Domain\DB\TrackingDb::class => [\BambooHR\Domain\DB\CompanyDb::class]
 		];
 		return $arr;
 	}
