@@ -23,13 +23,15 @@ class ImpossibleInjectionCheck extends BaseCheck
 
 	static private function getInjectableDependencies() {
 		static $arr = [
-			\Memcache::class                     => [],
-			\BambooHR\Domain\DB\CommonDb::class  => [],
-			\BambooHR\Domain\DB\MainDB::class    => [],
-			\Company::class                      => [\BambooHR\Domain\DB\CompanyDb::class],
-			\CompanyMemcache::class              => [\Company::class],
-			\CompanyMaster::class                => [\Company::class],
-			\BambooHR\Repository\BLocale::class  => [\BLocale::class]
+			\Memcache::class                                      => [],
+			\BambooHR\Domain\DB\CommonDb::class                   => [],
+			\BambooHR\Domain\DB\MainDB::class                     => [],
+			\Company::class                                       => [\BambooHR\Domain\DB\CompanyDb::class],
+			\CompanyMemcache::class                               => [\Company::class],
+			\CompanyMaster::class                                 => [\Company::class],
+			\BambooHR\Repository\BLocale::class                   => [\BLocale::class],
+			\BambooHR\Common\DataObjects\AuthenticatedUser::class => [],
+			\BambooHR\Domain\DB\TrackingDb::class                 => [\BambooHR\Domain\DB\CompanyDb::class]
 		];
 		return $arr;
 	}
